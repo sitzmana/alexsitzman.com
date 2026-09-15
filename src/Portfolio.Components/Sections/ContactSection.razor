@@ -1,0 +1,23 @@
+@* Closing call to action. A mailto link rather than a form: a form would need a
+   server or a third-party endpoint, and the site is deliberately static. *@
+
+<ContentSection Key="contact" Title="Get in touch"
+                Lead="Open to conversations about cloud-native infrastructure, Kubernetes, and Azure.">
+    @if (!string.IsNullOrWhiteSpace(Content.Site.Email))
+    {
+        <div class="contact reveal">
+            <a class="button button--primary" href="mailto:@Content.Site.Email">
+                <IconGlyph Name="mail" />
+                <span>Email me</span>
+            </a>
+            <p class="contact__address">
+                <a href="mailto:@Content.Site.Email">@Content.Site.Email</a>
+            </p>
+        </div>
+    }
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

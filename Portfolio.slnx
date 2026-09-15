@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Portfolio.Components/Portfolio.Components.csproj" />
+    <Project Path="src/Portfolio.Content/Portfolio.Content.csproj" />
+    <Project Path="src/Portfolio.Generator/Portfolio.Generator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Portfolio.Tests/Portfolio.Tests.csproj" />
+  </Folder>
+</Solution>

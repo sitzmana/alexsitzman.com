@@ -1,0 +1,19 @@
+@* Technology tags. Presented as a list so assistive tech announces the count. *@
+
+@if (Tags.Length > 0)
+{
+    <ul class="tags" aria-label="@Label">
+        @foreach (var tag in Tags)
+        {
+            <li class="tag">@tag</li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required string[] Tags { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = "Technologies";
+}

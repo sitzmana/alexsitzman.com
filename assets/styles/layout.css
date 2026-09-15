@@ -1,0 +1,395 @@
+/* Page frame: masthead, hero, section rhythm, footer. */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.masthead.is-stuck {
+  border-bottom-color: var(--border);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+}
+
+.masthead__shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 4rem;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  /* Comfortable touch target without inflating the header. */
+  padding: var(--space-2) var(--space-2);
+  margin-inline-start: calc(var(--space-2) * -1);
+}
+
+.wordmark__mark {
+  color: var(--text);
+}
+
+/* The gradient is applied only where it can be clipped to the glyphs. Without the
+   guard, an unsupporting engine would paint transparent text on transparent. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .wordmark__mark {
+    background: linear-gradient(120deg, var(--text) 30%, var(--accent) 140%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.nav__list {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--space-1), 0.4vw + 0.1rem, var(--space-3));
+}
+
+.nav__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.nav__link:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.nav__link.is-current {
+  color: var(--text);
+  background: var(--accent-soft);
+  /* Current page is marked by weight and aria-current too, not colour alone. */
+  font-weight: 600;
+}
+
+/* ---- Hero ----------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(3.5rem, 2rem + 9vw, 9rem) var(--section-y);
+  overflow: hidden;
+}
+
+.hero__field {
+  position: absolute;
+  inset: -20% 0 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 85% 55% at 45% 25%, #000 25%, transparent 72%);
+}
+
+.hero__glow {
+  position: absolute;
+  inset-block-start: -10%;
+  inset-inline-start: 50%;
+  width: min(60rem, 120%);
+  aspect-ratio: 1.6;
+  translate: -50% 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgb(77 184 255 / 13%),
+    transparent 62%
+  );
+}
+
+.hero__shell {
+  display: grid;
+  gap: var(--space-5);
+  justify-items: start;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.hero__eyebrow .glyph {
+  color: var(--accent);
+}
+
+.hero__title {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--step-5);
+  font-weight: 650;
+}
+
+.hero__greeting {
+  color: var(--text-subtle);
+  font-weight: 400;
+  font-size: var(--step-3);
+  letter-spacing: -0.01em;
+}
+
+.hero__name {
+  color: var(--text);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero__name {
+    background: linear-gradient(105deg, var(--text) 42%, var(--accent-bright) 118%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.hero__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.hero__pin {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.hero__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.hero__scroll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: var(--space-3) 0;
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-decoration: none;
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+.hero__scroll:hover {
+  color: var(--accent-bright);
+}
+
+/* ---- Sections ------------------------------------------------------- */
+
+.main {
+  display: block;
+}
+
+.section {
+  padding-block: var(--section-y);
+  border-top: 1px solid var(--border);
+}
+
+.section:first-child {
+  border-top: 0;
+}
+
+.section__head {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+  max-width: var(--measure);
+}
+
+.section__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-subtle);
+}
+
+.section__index {
+  color: var(--accent);
+}
+
+.section__rule {
+  flex: 0 0 2.5rem;
+  height: 1px;
+  background: linear-gradient(to right, var(--accent-line), transparent);
+}
+
+.section__title {
+  font-size: var(--step-3);
+}
+
+.section__lead {
+  color: var(--text-muted);
+  font-size: var(--step-1);
+}
+
+/* ---- Page head ------------------------------------------------------ */
+
+.page-head {
+  padding-block: clamp(2.5rem, 1.5rem + 5vw, 5rem) var(--space-6);
+}
+
+.page-head__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent);
+  margin-bottom: var(--space-3);
+}
+
+.page-head__title {
+  font-size: var(--step-4);
+  max-width: 20ch;
+}
+
+.page-head__lead {
+  margin-top: var(--space-5);
+  max-width: var(--measure);
+  color: var(--text-muted);
+  font-size: var(--step-1);
+}
+
+.page-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.page-head__back:hover {
+  color: var(--accent-bright);
+}
+
+.is-flipped {
+  rotate: 180deg;
+}
+
+.notfound {
+  padding-block: clamp(4rem, 2rem + 10vw, 9rem);
+  display: grid;
+  gap: var(--space-5);
+  justify-items: start;
+}
+
+/* ---- Footer --------------------------------------------------------- */
+
+.colophon {
+  border-top: 1px solid var(--border);
+  padding-block: var(--space-8) var(--space-7);
+  background: var(--bg-raised);
+}
+
+.colophon__shell {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.colophon__name {
+  font-weight: 600;
+  font-size: var(--step-1);
+}
+
+.colophon__title {
+  color: var(--text-muted);
+  font-size: var(--step--1);
+}
+
+.colophon__nav ul,
+.colophon__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.colophon__nav a,
+.colophon__social a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  text-decoration: none;
+}
+
+.colophon__nav a:hover,
+.colophon__social a:hover {
+  color: var(--accent-bright);
+  text-decoration: underline;
+}
+
+.colophon__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.colophon__sep {
+  color: var(--accent-line);
+}
+
+@media (min-width: 52em) {
+  .colophon__shell {
+    grid-template-columns: 1fr auto;
+    align-items: start;
+  }
+
+  .colophon__brand {
+    grid-row: span 2;
+  }
+
+  .colophon__legal {
+    grid-column: 1 / -1;
+  }
+}

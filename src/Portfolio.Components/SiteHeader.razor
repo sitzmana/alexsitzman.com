@@ -1,0 +1,35 @@
+@* Site header. The nav stays visible at every width: with three short links a
+   disclosure menu would add a tap, a focus trap, and a JavaScript dependency
+   for no benefit. Revisit if the nav grows past roughly five items. *@
+
+<header class="masthead">
+    <div class="shell masthead__shell">
+        <a class="wordmark" href="/">
+            <span class="wordmark__mark" aria-hidden="true">@Content.Site.Initials</span>
+            <span class="visually-hidden">@Content.Site.Name — home</span>
+        </a>
+
+        <nav class="nav" aria-label="Primary">
+            <ul class="nav__list">
+                @foreach (var item in Content.NavPages)
+                {
+                    <li>
+                        <a class="nav__link @(item.Route == CurrentRoute ? "is-current" : null)"
+                           href="@item.Route"
+                           aria-current="@(item.Route == CurrentRoute ? "page" : null)">
+                            @item.NavLabel
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</header>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string CurrentRoute { get; set; }
+}

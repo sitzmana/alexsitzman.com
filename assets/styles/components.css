@@ -1,0 +1,445 @@
+/* Reusable pieces: cards, tags, chips, buttons, lists. */
+
+/* ---- Cards ---------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 40em) {
+  .cards--projects,
+  .cards--certs,
+  .cards--interests,
+  .cards--now {
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--bg-raised);
+  box-shadow: var(--shadow-raised);
+  transition: border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+/* A hairline of signal colour appears along the top edge on interest. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -1px -1px auto;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(to right, transparent, var(--accent-line), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+.card:hover::before,
+.card:focus-within::before {
+  opacity: 1;
+}
+
+.card__body {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  height: 100%;
+  padding: var(--space-5);
+}
+
+.card__title {
+  font-size: var(--step-2);
+}
+
+.card__title--sm {
+  font-size: var(--step-1);
+}
+
+.card__link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+/* The whole card is clickable, but only the title is the accessible link. */
+.card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.card__chevron {
+  align-self: center;
+  color: var(--accent);
+  transition: translate var(--dur-base) var(--ease-out);
+}
+
+.card:hover .card__chevron {
+  translate: 3px 0;
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text-subtle);
+}
+
+.card__summary {
+  color: var(--text-muted);
+}
+
+/* ---- Certifications ------------------------------------------------- */
+
+.card--cert .card__body {
+  gap: var(--space-2);
+}
+
+.cert__badge {
+  align-self: start;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
+}
+
+.cert__issuer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  margin-bottom: var(--space-2);
+}
+
+.cert__check {
+  color: var(--accent);
+}
+
+/* ---- Tags ----------------------------------------------------------- */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  white-space: nowrap;
+}
+
+.tags--lg .tag {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--step-0);
+  transition: border-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+
+.tags--lg .tag:hover {
+  border-color: var(--accent-line);
+  color: var(--text);
+}
+
+/* ---- Links on entries ----------------------------------------------- */
+
+.entry-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+}
+
+.entry-link,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  font-size: var(--step--1);
+}
+
+.entry-link {
+  min-height: 2.75rem;
+  color: var(--accent-bright);
+  /* Underline, not colour alone, marks these as links. */
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  /* Sits above the card's full-surface link overlay. */
+  position: relative;
+  z-index: var(--z-raised);
+}
+
+.entry-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+.chip {
+  min-height: 2.75rem;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: border-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---- Buttons -------------------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  padding-inline: var(--space-6);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  text-decoration: none;
+  transition: translate var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.button--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 10px 30px -14px var(--accent);
+}
+
+.button--primary:hover {
+  translate: 0 -2px;
+  box-shadow: 0 16px 34px -14px var(--accent);
+}
+
+/* ---- Skills --------------------------------------------------------- */
+
+.skills {
+  display: grid;
+  gap: var(--space-7);
+}
+
+@media (min-width: 46em) {
+  .skills {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}
+
+.skills__heading {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-subtle);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- Now ------------------------------------------------------------ */
+
+.now__group + .now__group {
+  margin-top: var(--space-8);
+}
+
+.now__heading {
+  font-size: var(--step-1);
+  margin-bottom: var(--space-4);
+  color: var(--text-muted);
+}
+
+.now__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--accent-bright);
+}
+
+.now__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ---- Facts ---------------------------------------------------------- */
+
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.fact {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent-line);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.fact__marker {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 0.62em;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ---- Connect -------------------------------------------------------- */
+
+.connect {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 34rem;
+}
+
+.connect__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 3.5rem;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-decoration: none;
+  transition: border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.connect__link:hover {
+  border-color: var(--accent-line);
+  background: var(--surface-hover);
+}
+
+.connect__label {
+  font-weight: 600;
+}
+
+.connect__host {
+  color: var(--text-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+.connect__glyph {
+  margin-inline-start: auto;
+  color: var(--accent);
+}
+
+/* ---- Contact -------------------------------------------------------- */
+
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.contact__address {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+
+.contact__address a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+/* ---- Project factsheet ---------------------------------------------- */
+
+.factsheet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5) var(--space-8);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.factsheet dt {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-subtle);
+  margin-bottom: var(--space-1);
+}
+
+.factsheet dd {
+  margin: 0;
+  color: var(--text);
+}
+
+/* ---- Scroll progress ------------------------------------------------ */
+
+.scroll-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 2px;
+  z-index: var(--z-progress);
+  background: linear-gradient(to right, var(--accent), var(--accent-bright));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* Scroll-driven where supported, so no scroll listener is needed. */
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes scroll-progress {
+    to {
+      transform: scaleX(1);
+    }
+  }
+}

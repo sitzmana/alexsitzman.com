@@ -1,0 +1,13 @@
+@* Render root for a project detail page. *@
+
+<CascadingValue Value="Content" IsFixed="true">
+    <ProjectPage Project="Project" />
+</CascadingValue>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PortfolioContent Content { get; set; }
+
+    [Parameter, EditorRequired]
+    public required Project Project { get; set; }
+}

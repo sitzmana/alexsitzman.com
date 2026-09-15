@@ -1,0 +1,38 @@
+@* Shared frame for every page section: anchor target, technical index label, heading. *@
+
+<section class="section" id="@Key" data-section="@Key">
+    <div class="shell">
+        <header class="section__head reveal">
+            <p class="section__eyebrow">
+                <span class="section__index">@Index.ToString("00", CultureInfo.InvariantCulture)</span>
+                <span class="section__rule" aria-hidden="true"></span>
+                <span class="section__key">@Key</span>
+            </p>
+            <h2 class="section__title">@Title</h2>
+            @if (!string.IsNullOrWhiteSpace(Lead))
+            {
+                <p class="section__lead">@Lead</p>
+            }
+        </header>
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [CascadingParameter]
+    private SectionContext? Context { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Key { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Title { get; set; }
+
+    [Parameter]
+    public string? Lead { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private int Index => Context?.Index ?? 1;
+}

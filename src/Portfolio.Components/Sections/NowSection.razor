@@ -1,0 +1,42 @@
+@* Current focus, grouped by the heading each entry declares. *@
+
+<ContentSection Key="now" Title="Current focus">
+    @foreach (var group in Content.NowByGroup)
+    {
+        <section class="now__group">
+            <h3 class="now__heading reveal">@group.Key</h3>
+            <ul class="cards cards--now">
+                @foreach (var item in group)
+                {
+                    <li class="card reveal">
+                        <article class="card__body">
+                            <h4 class="card__title card__title--sm">@item.Title</h4>
+                            @if (!string.IsNullOrWhiteSpace(item.Status))
+                            {
+                                <p class="now__status">
+                                    <span class="now__dot" aria-hidden="true"></span>
+                                    @item.Status
+                                </p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.Summary))
+                            {
+                                <p class="card__summary">@item.Summary</p>
+                            }
+                            @if (item.HasBody)
+                            {
+                                <div class="prose prose--tight">@((MarkupString)item.BodyHtml)</div>
+                            }
+                            <TagList Tags="item.Tags" Label="@($"Technologies used in {item.Title}")" />
+                            <LinkList Links="item.Links" />
+                        </article>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

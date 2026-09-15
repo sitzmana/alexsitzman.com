@@ -1,0 +1,27 @@
+# Build output
+dist/
+bin/
+obj/
+
+# .NET
+*.user
+*.suo
+.vs/
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# Editors
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local settings that must never be committed
+*.local.json
+.env
+.env.*
+!.env.example
+
+prompt.txt

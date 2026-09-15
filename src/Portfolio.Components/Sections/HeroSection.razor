@@ -1,0 +1,64 @@
+@* Opening statement. Not wrapped in ContentSection: it carries the page's h1
+   and needs a full-bleed backdrop rather than the standard section frame. *@
+
+<section class="hero" id="hero" data-section="hero">
+    <div class="hero__field" aria-hidden="true">
+        <div class="hero__grid"></div>
+        <div class="hero__glow"></div>
+    </div>
+
+    <div class="shell hero__shell">
+        <p class="hero__eyebrow reveal">
+            <IconGlyph Name="node" />
+            <span>@Site.Title</span>
+        </p>
+
+        <h1 class="hero__title reveal">
+            <span class="hero__greeting">@Greeting,</span>
+            <span class="hero__name">I am @Site.Name.</span>
+        </h1>
+
+        @if (!string.IsNullOrWhiteSpace(Site.Location))
+        {
+            <p class="hero__meta reveal">
+                <span class="hero__pin" aria-hidden="true"></span>
+                @Site.Location
+            </p>
+        }
+
+        @if (Site.Social.Length > 0)
+        {
+            <ul class="hero__social reveal" aria-label="Profiles">
+                @foreach (var link in Site.Social)
+                {
+                    <li>
+                        <a class="chip" href="@link.Url" rel="me noopener noreferrer" target="_blank">
+                            <span>@link.Label</span>
+                            <IconGlyph Name="arrow-out" />
+                            <span class="visually-hidden">(opens in a new tab)</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
+        <a class="hero__scroll reveal" href="#projects">
+            <span>Selected work</span>
+            <IconGlyph Name="arrow-down" />
+        </a>
+    </div>
+</section>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    /// <summary>
+    /// Baked in at build time rather than read from the visitor's clock: a static page
+    /// cannot know the reader's local hour, and a wrong greeting reads worse than none.
+    /// </summary>
+    [Parameter]
+    public string Greeting { get; set; } = "Hello";
+
+    private SiteConfig Site => Content.Site;
+}

@@ -1,0 +1,45 @@
+@* Site footer. Repeats navigation and profiles so the page ends with a way out. *@
+
+<footer class="colophon">
+    <div class="shell colophon__shell">
+        <div class="colophon__brand">
+            <p class="colophon__name">@Content.Site.Name</p>
+            <p class="colophon__title">@Content.Site.Title</p>
+        </div>
+
+        <nav class="colophon__nav" aria-label="Footer">
+            <ul>
+                @foreach (var item in Content.NavPages)
+                {
+                    <li><a href="@item.Route">@item.NavLabel</a></li>
+                }
+            </ul>
+        </nav>
+
+        <ul class="colophon__social" aria-label="Profiles">
+            @foreach (var link in Content.Site.Social)
+            {
+                <li>
+                    <a href="@link.Url" rel="me noopener noreferrer" target="_blank">
+                        @link.Label
+                        <span class="visually-hidden">(opens in a new tab)</span>
+                    </a>
+                </li>
+            }
+        </ul>
+
+        <p class="colophon__legal">
+            <span>&copy; @BuildYear.ToString(CultureInfo.InvariantCulture) @Content.Site.Name</span>
+            <span class="colophon__sep" aria-hidden="true">/</span>
+            <span>Built with .NET and rendered to static HTML</span>
+        </p>
+    </div>
+</footer>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    [Parameter]
+    public int BuildYear { get; set; } = DateTime.UtcNow.Year;
+}

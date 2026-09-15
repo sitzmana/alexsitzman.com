@@ -1,0 +1,30 @@
+@* Certifications. The abbreviation is decorative shorthand; the full name is the heading. *@
+
+<ContentSection Key="certifications" Title="Certifications"
+                Lead="Independently assessed, hands-on credentials.">
+    <ul class="cards cards--certs">
+        @foreach (var cert in Content.Certifications)
+        {
+            <li class="card card--cert reveal">
+                <article class="card__body">
+                    @if (!string.IsNullOrWhiteSpace(cert.Abbreviation))
+                    {
+                        <p class="cert__badge" aria-hidden="true">@cert.Abbreviation</p>
+                    }
+                    <h3 class="card__title">@cert.Title</h3>
+                    <p class="cert__issuer">
+                        <IconGlyph Name="check" Class="cert__check" />
+                        @cert.Issuer
+                    </p>
+                    <TagList Tags="cert.Tags" Label="@($"Topics covered by {cert.Title}")" />
+                    <LinkList Links="cert.Links" />
+                </article>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

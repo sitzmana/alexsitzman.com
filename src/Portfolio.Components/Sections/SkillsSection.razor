@@ -1,0 +1,23 @@
+@* Technologies, grouped. No proficiency bars: a percentage on a skill is unverifiable. *@
+
+<ContentSection Key="skills" Title="Tools and technologies">
+    <div class="skills">
+        @foreach (var group in Content.Skills)
+        {
+            <section class="skills__group reveal">
+                <h3 class="skills__heading">@group.Title</h3>
+                <ul class="tags tags--lg">
+                    @foreach (var item in group.Items)
+                    {
+                        <li class="tag">@item</li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

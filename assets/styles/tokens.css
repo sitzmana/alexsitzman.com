@@ -1,0 +1,96 @@
+/* Design tokens. Single source of truth for colour, type, space, and motion.
+   Concept: "control plane" — dark instrument panel, technical metadata,
+   one signal colour used sparingly to mark what matters. */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Colour ------------------------------------------------------- */
+  --bg: #080b12;
+  --bg-raised: #0d121c;
+  --surface: rgb(255 255 255 / 2.5%);
+  --surface-hover: rgb(255 255 255 / 5%);
+
+  --border: rgb(148 163 184 / 14%);
+  --border-strong: rgb(148 163 184 / 30%);
+
+  --text: #e8eef8;
+  --text-muted: #9aa7bd;
+  --text-subtle: #7787a0;
+
+  --accent: #4db8ff;
+  --accent-bright: #8ad2ff;
+  --accent-soft: rgb(77 184 255 / 12%);
+  --accent-line: rgb(77 184 255 / 35%);
+  --on-accent: #06101c;
+
+  --grid-line: rgb(148 163 184 / 7%);
+
+  /* ---- Type --------------------------------------------------------- */
+  --font-sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Code", "SF Mono", "JetBrains Mono", "Fira Code",
+    ui-monospace, Consolas, monospace;
+
+  --step--1: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
+  --step-0: clamp(1rem, 0.97rem + 0.16vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.07rem + 0.28vw, 1.3125rem);
+  --step-2: clamp(1.375rem, 1.24rem + 0.66vw, 1.75rem);
+  --step-3: clamp(1.625rem, 1.36rem + 1.3vw, 2.5rem);
+  --step-4: clamp(2rem, 1.45rem + 2.7vw, 3.5rem);
+  --step-5: clamp(2.5rem, 1.5rem + 4.8vw, 5rem);
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.3;
+  --leading-normal: 1.65;
+
+  --tracking-tight: -0.022em;
+  --tracking-wide: 0.14em;
+
+  /* ---- Space -------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+  --section-y: clamp(3.5rem, 2rem + 7vw, 7.5rem);
+
+  /* ---- Shape -------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --shadow-raised: 0 1px 0 0 rgb(255 255 255 / 4%) inset,
+    0 12px 32px -18px rgb(0 0 0 / 90%);
+  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 7%) inset,
+    0 24px 48px -24px rgb(0 0 0 / 95%);
+
+  /* ---- Layout ------------------------------------------------------- */
+  --shell-max: 72rem;
+  --shell-pad: clamp(1.25rem, 0.8rem + 2.2vw, 3rem);
+  --measure: 68ch;
+
+  /* ---- Motion ------------------------------------------------------- */
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 620ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Layering ----------------------------------------------------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-header: 50;
+  --z-progress: 60;
+  --z-skip: 100;
+}
+
+/* Light presentation is deliberately not offered. One theme executed well beats
+   two half-tuned ones, and the instrument-panel concept depends on a dark field.
+   See docs/decisions.md. */

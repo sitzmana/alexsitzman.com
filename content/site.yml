@@ -1,0 +1,23 @@
+# Site-wide settings. Everything here appears in the header, hero, and footer.
+
+name: Alex Sitzman
+initials: AS.
+title: Senior Technical Support Engineer at Microsoft Azure
+location: Redmond, WA
+email: alexander@sitzman.net
+baseUrl: https://www.alexsitzman.com
+description: >-
+  Alex Sitzman is a Senior Technical Support Engineer at Microsoft Azure working on
+  Kubernetes, containers, Linux, and cloud-native infrastructure.
+
+# Add a line here and the icon appears in the hero and footer.
+social:
+  - label: GitHub
+    url: https://github.com/sitzmana
+    icon: github
+  - label: LinkedIn
+    url: https://www.linkedin.com/in/alexander-sitzman
+    icon: linkedin
+  - label: Dev.to
+    url: https://dev.to/sitzmana
+    icon: devto

@@ -1,0 +1,45 @@
+@* Renders one content page: optional heading, optional prose body, then the
+   sections its front matter declared, in order. *@
+
+<SiteHeader CurrentRoute="@Page.Route" />
+
+<main id="main" class="main">
+    @if (ShowHeading)
+    {
+        <div class="page-head">
+            <div class="shell">
+                @if (!string.IsNullOrWhiteSpace(Page.Eyebrow))
+                {
+                    <p class="page-head__eyebrow">@Page.Eyebrow</p>
+                }
+                <h1 class="page-head__title">@(Page.Heading ?? Page.Title)</h1>
+                @if (Page.HasBody)
+                {
+                    <div class="prose prose--lead">@((MarkupString)Page.BodyHtml)</div>
+                }
+            </div>
+        </div>
+    }
+
+    @foreach (var (key, index) in Page.Sections.Select((s, i) => (s, i + 1)))
+    {
+        <CascadingValue Value="new SectionContext(index)" IsFixed="true">
+            <DynamicComponent Type="SectionRegistry.Resolve(key, Page.SourcePath)" />
+        </CascadingValue>
+    }
+</main>
+
+<SiteFooter />
+
+@code {
+    [Parameter, EditorRequired]
+    public required Page Page { get; set; }
+
+    /// <summary>
+    /// The hero carries its own h1, so a page that leads with it skips the page head.
+    /// Blank <c>heading</c> in front matter also suppresses it.
+    /// </summary>
+    private bool ShowHeading =>
+        !Page.Sections.Contains("hero", StringComparer.OrdinalIgnoreCase)
+        && (Page.Heading ?? Page.Title) is { Length: > 0 };
+}

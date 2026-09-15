@@ -1,0 +1,70 @@
+/* Motion. Everything here is additive: with scripting off or reduced motion on,
+   the page renders fully and statically. */
+
+/* Content is visible by default. Only once the script has confirmed it is running
+   does anything get hidden, so a failed or blocked script cannot hide the site. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggering within a group reads as one movement rather than several. */
+.js .cards .reveal:nth-child(2) {
+  transition-delay: 70ms;
+}
+
+.js .cards .reveal:nth-child(3) {
+  transition-delay: 140ms;
+}
+
+.js .cards .reveal:nth-child(4) {
+  transition-delay: 210ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .js .reveal,
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0ms;
+  }
+
+  .scroll-progress {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Coarse pointers get no hover-dependent lift: it either never fires or sticks
+   after a tap. Focus styling still applies. */
+@media (hover: none) {
+  .card:hover {
+    transform: none;
+    box-shadow: var(--shadow-raised);
+  }
+
+  .button--primary:hover {
+    translate: none;
+  }
+}

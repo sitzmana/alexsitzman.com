@@ -1,0 +1,55 @@
+@* Detail page for a project whose content file has a body. *@
+
+<SiteHeader CurrentRoute="/" />
+
+<main id="main" class="main">
+    <div class="page-head">
+        <div class="shell">
+            <p class="page-head__eyebrow">
+                <a class="page-head__back" href="/#projects">
+                    <IconGlyph Name="arrow-right" Class="is-flipped" />
+                    <span>Selected work</span>
+                </a>
+            </p>
+            <h1 class="page-head__title">@Project.Title</h1>
+
+            @if (!string.IsNullOrWhiteSpace(Project.Summary))
+            {
+                <p class="page-head__lead">@Project.Summary</p>
+            }
+
+            <dl class="factsheet">
+                @if (!string.IsNullOrWhiteSpace(Project.Role))
+                {
+                    <div><dt>Role</dt><dd>@Project.Role</dd></div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Project.Period))
+                {
+                    <div><dt>Period</dt><dd>@Project.Period</dd></div>
+                }
+                @if (Project.Tags.Length > 0)
+                {
+                    <div>
+                        <dt>Stack</dt>
+                        <dd>@string.Join(", ", Project.Tags)</dd>
+                    </div>
+                }
+            </dl>
+
+            <LinkList Links="Project.Links" />
+        </div>
+    </div>
+
+    <div class="shell">
+        <article class="prose prose--article">
+            @((MarkupString)Project.BodyHtml)
+        </article>
+    </div>
+</main>
+
+<SiteFooter />
+
+@code {
+    [Parameter, EditorRequired]
+    public required Project Project { get; set; }
+}

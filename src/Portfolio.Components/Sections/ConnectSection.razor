@@ -1,0 +1,25 @@
+@* Profile links, driven by social entries in site.yml. *@
+
+<ContentSection Key="connect" Title="Connect">
+    <ul class="connect" aria-label="Profiles">
+        @foreach (var link in Content.Site.Social)
+        {
+            <li class="reveal">
+                <a class="connect__link" href="@link.Url" rel="me noopener noreferrer" target="_blank">
+                    <span class="connect__label">@link.Label</span>
+                    <span class="connect__host">@Host(link.Url)</span>
+                    <IconGlyph Name="arrow-out" Class="connect__glyph" />
+                    <span class="visually-hidden">(opens in a new tab)</span>
+                </a>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    private static string Host(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host : url;
+}

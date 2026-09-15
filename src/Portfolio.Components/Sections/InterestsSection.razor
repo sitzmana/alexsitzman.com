@@ -1,0 +1,29 @@
+@* Personal interests. A plain grid rather than a carousel: a carousel hides most of
+   its content behind controls and adds keyboard and motion problems for three items. *@
+
+<ContentSection Key="interests" Title="How I spend my time">
+    <ul class="cards cards--interests">
+        @foreach (var interest in Content.Interests)
+        {
+            <li class="card reveal">
+                <article class="card__body">
+                    <h3 class="card__title card__title--sm">@interest.Title</h3>
+                    @if (interest.HasBody)
+                    {
+                        <div class="prose prose--tight">@((MarkupString)interest.BodyHtml)</div>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(interest.Summary))
+                    {
+                        <p class="card__summary">@interest.Summary</p>
+                    }
+                    <LinkList Links="interest.Links" />
+                </article>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: this workflow only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test, and generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Scan for committed credentials
+        shell: pwsh
+        run: ./scripts/check-secrets.ps1
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore Portfolio.slnx --locked-mode
+
+      - name: Build
+        run: dotnet build Portfolio.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Portfolio.slnx --configuration Release --no-build --logger "trx;LogFileName=results.trx" --results-directory TestResults
+
+      - name: Generate site
+        run: dotnet run --project src/Portfolio.Generator --configuration Release --no-build -- --output dist
+
+      - name: Verify generated output
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in dist/index.html dist/about/index.html dist/now/index.html \
+                   dist/404.html dist/sitemap.xml dist/robots.txt \
+                   dist/staticwebapp.config.json; do
+            test -s "$f" || { echo "::error::Missing or empty: $f"; exit 1; }
+          done
+          test -n "$(find dist/assets -name 'site.*.css' -print -quit)" \
+            || { echo "::error::No hashed stylesheet in dist/assets"; exit 1; }
+          echo "Generated $(find dist -type f | wc -l) files, $(du -sh dist | cut -f1) total."
+
+      - name: Check performance budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          budget_kb=150
+          html_kb=$(( $(stat -c%s dist/index.html) / 1024 ))
+          css_kb=$(( $(cat dist/assets/site.*.css | wc -c) / 1024 ))
+          js_kb=$(( $(cat dist/assets/enhance.*.js | wc -c) / 1024 ))
+          total=$(( html_kb + css_kb + js_kb ))
+          echo "Home page payload: ${html_kb} KB HTML + ${css_kb} KB CSS + ${js_kb} KB JS = ${total} KB"
+          if [ "$total" -gt "$budget_kb" ]; then
+            echo "::error::Payload ${total} KB exceeds the ${budget_kb} KB budget."
+            exit 1
+          fi
+
+      - name: Upload site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+          retention-days: 7

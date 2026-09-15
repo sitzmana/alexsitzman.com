@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img"
+     aria-label="Alex Sitzman — Senior Technical Support Engineer at Microsoft Azure">
+  <defs>
+    <linearGradient id="name" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0.35" stop-color="#e8eef8"/>
+      <stop offset="1" stop-color="#8ad2ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.4" cy="0.1" r="0.8">
+      <stop offset="0" stop-color="#4db8ff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#4db8ff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="72" height="72" patternUnits="userSpaceOnUse">
+      <path d="M72 0H0V72" fill="none" stroke="#94a3b8" stroke-opacity="0.09" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#080b12"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <g font-family="Segoe UI, system-ui, sans-serif">
+    <text x="88" y="250" font-size="34" fill="#7787a0" font-family="Consolas, ui-monospace, monospace">
+      alexsitzman.com
+    </text>
+    <text x="88" y="360" font-size="94" font-weight="700" fill="url(#name)">Alex Sitzman</text>
+    <text x="88" y="428" font-size="38" fill="#9aa7bd">
+      Senior Technical Support Engineer, Microsoft Azure
+    </text>
+    <text x="88" y="500" font-size="28" fill="#4db8ff" font-family="Consolas, ui-monospace, monospace">
+      Kubernetes &#183; Azure &#183; Linux &#183; Cloud-native infrastructure
+    </text>
+  </g>
+
+  <rect x="88" y="530" width="180" height="3" fill="#4db8ff" opacity="0.6"/>
+</svg>

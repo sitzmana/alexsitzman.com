@@ -1,0 +1,22 @@
+@* Outbound links attached to a content entry. Always text-labelled. *@
+
+@if (Links.Length > 0)
+{
+    <ul class="entry-links">
+        @foreach (var link in Links)
+        {
+            <li>
+                <a class="entry-link" href="@link.Url" rel="noopener noreferrer" target="_blank">
+                    <span>@link.Label</span>
+                    <IconGlyph Name="arrow-out" />
+                    <span class="visually-hidden">(opens in a new tab)</span>
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required ContentLink[] Links { get; set; }
+}

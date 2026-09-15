@@ -1,0 +1,54 @@
+@* Project cards. A project with a body links through to its own page. *@
+
+<ContentSection Key="projects" Title="Selected work"
+                Lead="Systems I have designed, built, and operated end to end.">
+    <ul class="cards cards--projects">
+        @foreach (var project in Content.FeaturedProjects)
+        {
+            <li class="card reveal">
+                <article class="card__body">
+                    <h3 class="card__title">
+                        @if (project.HasBody)
+                        {
+                            <a class="card__link" href="/projects/@project.Slug/">
+                                @project.Title
+                                <IconGlyph Name="arrow-right" Class="card__chevron" />
+                            </a>
+                        }
+                        else
+                        {
+                            @project.Title
+                        }
+                    </h3>
+
+                    @if (!string.IsNullOrWhiteSpace(project.Role) || !string.IsNullOrWhiteSpace(project.Period))
+                    {
+                        <p class="card__meta">
+                            @if (!string.IsNullOrWhiteSpace(project.Role))
+                            {
+                                <span>@project.Role</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(project.Period))
+                            {
+                                <span>@project.Period</span>
+                            }
+                        </p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(project.Summary))
+                    {
+                        <p class="card__summary">@project.Summary</p>
+                    }
+
+                    <TagList Tags="project.Tags" Label="@($"Technologies used in {project.Title}")" />
+                    <LinkList Links="project.Links" />
+                </article>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

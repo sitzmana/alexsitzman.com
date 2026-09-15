@@ -1,0 +1,14 @@
+@* Render root for a content page. Exists so the generator can supply the cascading
+   content value through a plain parameter dictionary. *@
+
+<CascadingValue Value="Content" IsFixed="true">
+    <PageView Page="Page" />
+</CascadingValue>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PortfolioContent Content { get; set; }
+
+    [Parameter, EditorRequired]
+    public required Page Page { get; set; }
+}

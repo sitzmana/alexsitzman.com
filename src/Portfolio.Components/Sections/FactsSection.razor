@@ -1,0 +1,18 @@
+@* Short asides. The title is the whole fact, so no body is expected. *@
+
+<ContentSection Key="facts" Title="Did you know?">
+    <ul class="facts">
+        @foreach (var fact in Content.Facts)
+        {
+            <li class="fact reveal">
+                <span class="fact__marker" aria-hidden="true"></span>
+                <span>@fact.Title</span>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}
