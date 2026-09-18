@@ -318,17 +318,20 @@ diagram or claim about the project's implementation.
 
 ## D22 - One validation pipeline per change
 
-`deploy.yml` calls the reusable `ci.yml` build job and consumes that run's artifact.
+The single deployment workflow calls the reusable `ci.yml` build job and consumes that run's artifact.
 CI no longer independently repeats the same build for each push or pull request.
 The shared gate includes credential scanning, .NET tests, exact byte budgeting,
 and browser regressions, so deployment cannot bypass the checks. CI retains a
 manual `workflow_dispatch` entry point. No deployment secret is passed into the
 read-only validation workflow.
 
-The September 18 portal setup added a second publisher that had no generator
-step and could not find the untracked `dist/` directory. Remove that generated
-workflow rather than maintaining competing deployment paths. Retain the
-portal-created deployment secret name in both upload and preview cleanup.
+The September 18 portal setup added a second publisher with no generator step.
+Changing the deployment authorization policy regenerated that scaffold. Retain
+Azure's `azure-static-web-apps-jolly-water-0e62d601e.yml` filename, replace its
+auto-build contents with the validated pipeline, and remove the old `deploy.yml`
+rather than maintaining competing deployment paths. Both upload and preview
+cleanup use the portal-created secret, with Azure's authorization policy set to
+**Azure deployment token** instead of mixing it with GitHub identity-token auth.
 Workflow regressions parse the YAML with the existing YamlDotNet dependency;
 they cover the single publisher, artifact handoff, and matching secret references.
 

@@ -90,7 +90,7 @@ Runs in CI on every push and pull request.
 | Accessibility reviewed | Met | [accessibility.md](accessibility.md) — 0 contrast, 0 target-size violations |
 | Performance reviewed | Met | [performance.md](performance.md) — 9.9 KB gzipped home page |
 | No database required | Met | Static files only |
-| Azure deployment config present | Met | [deploy.yml](../.github/workflows/deploy.yml), [staticwebapp.config.json](../static/staticwebapp.config.json) |
+| Azure deployment config present | Met | [Deploy workflow](../.github/workflows/azure-static-web-apps-jolly-water-0e62d601e.yml), [staticwebapp.config.json](../static/staticwebapp.config.json) |
 | GitHub Actions validation present | Met | [ci.yml](../.github/workflows/ci.yml) |
 | No secrets committed | Met | Scan clean, enforced in CI |
 | No known critical defects | Met | See below |

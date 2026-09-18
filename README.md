@@ -155,7 +155,7 @@ move keyboard focus, and a footer link returns to the top without requiring scri
 
 ## Deployment
 
-Push to `main`. [.github/workflows/deploy.yml](.github/workflows/deploy.yml) calls the
+Push to `main`. The [Deploy workflow](.github/workflows/azure-static-web-apps-jolly-water-0e62d601e.yml) calls the
 shared CI workflow to build, test, generate, enforce the byte budget, and check browser
 behavior before deploying to Azure Static Web Apps. Pull requests
 get a preview environment that is torn down when the PR closes.
@@ -165,8 +165,10 @@ no storage account, no compute.
 
 **Required secret:** `AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E`
 (created by Azure). Upload and preview cleanup use the same secret. Keep
-`deploy.yml` as the only deployment entry point; a second portal-generated
-workflow must not bypass the site's build and validation.
+the Azure-named workflow as the only deployment entry point; `ci.yml` remains
+the reusable validation workflow, and the old `deploy.yml` is removed. Azure's
+deployment authorization policy must be **Azure deployment token**, matching the
+workflow. A regenerated portal scaffold must not bypass the site's build and validation.
 
 Setup, custom-domain migration, and rollback are in [docs/deployment.md](docs/deployment.md).
 

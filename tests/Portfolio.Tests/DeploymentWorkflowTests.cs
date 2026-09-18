@@ -4,6 +4,8 @@ namespace Portfolio.Tests;
 
 public sealed class DeploymentWorkflowTests
 {
+    private const string DeploymentWorkflow = "azure-static-web-apps-jolly-water-0e62d601e.yml";
+
     private static readonly string WorkflowDirectory = Path.Combine(RepositoryPaths.Root, ".github", "workflows");
 
     [Fact]
@@ -17,13 +19,13 @@ public sealed class DeploymentWorkflowTests
                 .Any(step => Text(step, "uses")?.StartsWith("Azure/static-web-apps-deploy@", StringComparison.Ordinal) == true))
             .Select(Path.GetFileName);
 
-        Assert.Equal("deploy.yml", Assert.Single(publishers));
+        Assert.Equal(DeploymentWorkflow, Assert.Single(publishers));
     }
 
     [Fact]
     public void Deployment_consumes_the_validated_artifact_without_another_build()
     {
-        var jobs = Map(Load(Path.Combine(WorkflowDirectory, "deploy.yml")), "jobs");
+        var jobs = Map(Load(Path.Combine(WorkflowDirectory, DeploymentWorkflow)), "jobs");
         Assert.Equal("./.github/workflows/ci.yml", Text(Map(jobs, "build"), "uses"));
         var deploy = Map(jobs, "deploy");
         Assert.Equal("build", Text(deploy, "needs"));
@@ -51,13 +53,15 @@ public sealed class DeploymentWorkflowTests
     [Fact]
     public void Upload_and_preview_cleanup_reference_the_same_deployment_secret()
     {
-        var jobs = Map(Load(Path.Combine(WorkflowDirectory, "deploy.yml")), "jobs");
+        var jobs = Map(Load(Path.Combine(WorkflowDirectory, DeploymentWorkflow)), "jobs");
         var upload = Map(Action(Steps(Map(jobs, "deploy")), "Azure/static-web-apps-deploy@"), "with");
         var close = Map(Action(Steps(Map(jobs, "close-preview")), "Azure/static-web-apps-deploy@"), "with");
         var token = Assert.IsType<string>(Text(upload, "azure_static_web_apps_api_token"));
 
         Assert.Matches(@"^\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}$", token);
         Assert.Equal(token, Text(close, "azure_static_web_apps_api_token"));
+        Assert.Null(Text(upload, "github_id_token"));
+        Assert.Null(Text(close, "github_id_token"));
         Assert.Equal("upload", Text(upload, "action"));
         Assert.Equal("close", Text(close, "action"));
     }

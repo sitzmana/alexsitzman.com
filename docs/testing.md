@@ -98,7 +98,8 @@ case tests real disabled-script behavior without hanging on suppressed callbacks
 
 ## CI and deployment
 
-`deploy.yml` handles pushes and pull requests, calls reusable `ci.yml`, and only
+`azure-static-web-apps-jolly-water-0e62d601e.yml` handles pushes and pull requests,
+calls reusable `ci.yml`, and only
 deploys the resulting artifact if validation succeeds. CI can also be run manually.
 This avoids two independent build pipelines for the same change.
 

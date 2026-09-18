@@ -20,14 +20,21 @@ needed, but it costs nothing.
 
 The portal-created app already has a GitHub repository secret named
 `AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E`. The upload and preview-cleanup
-steps in `deploy.yml` both use that exact name. No second generic
+steps in `azure-static-web-apps-jolly-water-0e62d601e.yml` both use that exact name. No second generic
 `AZURE_STATIC_WEB_APPS_API_TOKEN` secret, App Service publish profile, or Azure login
 step is needed.
 
-Keep `deploy.yml` as the only deployment workflow. The portal-generated
-`azure-static-web-apps-jolly-water-0e62d601e.yml` was removed because it tried to
-upload the git-ignored `dist/` directory without running the generator first.
-Do not recreate that parallel deployment path or commit generated output.
+In Azure, **Settings > Configuration > Deployment configuration > Deployment
+authorization policy** must be **Azure deployment token**. GitHub identity-token
+authorization is a different configuration; this workflow does not request an
+OIDC token. If Azure resets the deployment token, update the existing GitHub
+secret's value rather than adding a token to any tracked file.
+
+Keep the Azure-named workflow as the only deployment entry point. Its filename
+is preserved from the portal, but its contents use the validated pipeline, not
+the generated scaffold that tried to auto-build the repository root. The old
+`deploy.yml` is removed. `ci.yml` remains reusable and generates the git-ignored
+`dist/` artifact. Do not restore a parallel publisher or commit generated output.
 
 ### Creating a replacement app from the CLI
 
@@ -63,7 +70,7 @@ az staticwebapp secrets list \
   --query "properties.apiKey" -o tsv
 ```
 
-Store it using the repository secret name referenced by `deploy.yml`:
+Store it using the repository secret name referenced by the deployment workflow:
 
 ```bash
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E
@@ -76,7 +83,7 @@ preview-cleanup references together.
 
 ## How deployment works
 
-[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) runs on push to `main`
+The [Deploy workflow](../.github/workflows/azure-static-web-apps-jolly-water-0e62d601e.yml) runs on push to `main`
 and on pull requests.
 
 ```
@@ -107,8 +114,8 @@ it down when the PR closes.
 
 **Workflow regressions.** The .NET suite checks that only one workflow deploys,
 that deployment depends on the reusable CI job and downloads its `site` artifact,
-and that upload and preview cleanup share the same secret reference. Secret values
-are never read by tests.
+and that upload and preview cleanup share the same deployment-token reference
+without an identity-token input. Secret values are never read by tests.
 
 **Retrying a configuration fix.** Commit and push the corrected workflow to `main`
 to trigger a fresh **Deploy** run. Inspect the build and deploy jobs separately;
