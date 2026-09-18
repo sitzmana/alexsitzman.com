@@ -83,7 +83,7 @@ are retained, and content errors leave the last good preview intact.
 dotnet test Portfolio.slnx
 ```
 
-The 143-test suite covers front-matter parsing, slug rules, ordering, drafts, output
+The 146-test suite covers front-matter parsing, slug rules, ordering, drafts, output
 safety, preview rebuild behavior, metadata, and end-to-end generated HTML.
 
 `RealContentTests` loads the actual `content/` folder, so a malformed or mis-keyed content
@@ -163,7 +163,10 @@ get a preview environment that is torn down when the PR closes.
 **Azure resources required:** one Static Web App (Free tier is sufficient). No database,
 no storage account, no compute.
 
-**Required secret:** `AZURE_STATIC_WEB_APPS_API_TOKEN`.
+**Required secret:** `AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E`
+(created by Azure). Upload and preview cleanup use the same secret. Keep
+`deploy.yml` as the only deployment entry point; a second portal-generated
+workflow must not bypass the site's build and validation.
 
 Setup, custom-domain migration, and rollback are in [docs/deployment.md](docs/deployment.md).
 

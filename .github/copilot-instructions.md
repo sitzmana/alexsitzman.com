@@ -23,7 +23,7 @@ static/       Copied verbatim to the site root
 src/Portfolio.Content      Models + loader. No HTML knowledge.
 src/Portfolio.Components   Razor components. Presentation only. No I/O.
 src/Portfolio.Generator    Console app. HtmlRenderer → files.
-tests/Portfolio.Tests      xUnit, 143 tests.
+tests/Portfolio.Tests      xUnit, 146 tests.
 tests/browser              Optional local Playwright tooling; required in CI.
 dist/                      Generated. Git-ignored. Never commit.
 ```
@@ -32,7 +32,7 @@ dist/                      Generated. Git-ignored. Never commit.
 
 ```pwsh
 dotnet run --project src/Portfolio.Generator -- --serve   # preview at :5000, watches files
-dotnet test Portfolio.slnx                                # 143 tests
+dotnet test Portfolio.slnx                                # 146 tests
 dotnet build Portfolio.slnx -c Release
 ```
 

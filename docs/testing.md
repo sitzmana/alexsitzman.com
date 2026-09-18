@@ -8,7 +8,7 @@ dotnet build Portfolio.slnx -c Release
 dotnet run --project src\Portfolio.Generator -c Release --no-build -- --output dist
 ```
 
-**143 tests** passed for the September 18, 2026 revision. Coverage includes:
+**146 tests** cover the September 18, 2026 revision, including:
 
 - Front-matter fences, slugs, ordering, drafts, and real repository content.
 - Unknown and duplicate YAML keys, invalid origins/links, and unsupported artwork.
@@ -33,6 +33,8 @@ dotnet run --project src\Portfolio.Generator -c Release --no-build -- --output d
 - Unchanged-file timestamps and case-only destination filename changes.
 - Safe JSON-LD escaping, theme metadata, sitemap metadata, and real 404 configuration.
 - Watcher events arriving during a build producing a coalesced follow-up build.
+- A single deployment workflow, the validated artifact handoff, prebuilt upload
+  settings, and matching upload/preview-cleanup secret references.
 
 The solution needs no Python or Node.js to build, test its .NET code, or generate.
 

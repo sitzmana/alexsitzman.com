@@ -46,14 +46,14 @@ jobs:
         id: swa
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           # The artifact is already built; Oryx must not try to build it again.
           app_location: dist
+          api_location: ''
           output_location: ''
           skip_app_build: true
-          skip_api_build: true
 
   close-preview:
     name: Tear down pull request preview
@@ -68,5 +68,5 @@ jobs:
       - name: Close staging environment
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_WATER_0E62D601E }}
           action: close

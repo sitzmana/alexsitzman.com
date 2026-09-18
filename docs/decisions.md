@@ -325,6 +325,13 @@ and browser regressions, so deployment cannot bypass the checks. CI retains a
 manual `workflow_dispatch` entry point. No deployment secret is passed into the
 read-only validation workflow.
 
+The September 18 portal setup added a second publisher that had no generator
+step and could not find the untracked `dist/` directory. Remove that generated
+workflow rather than maintaining competing deployment paths. Retain the
+portal-created deployment secret name in both upload and preview cleanup.
+Workflow regressions parse the YAML with the existing YamlDotNet dependency;
+they cover the single publisher, artifact handoff, and matching secret references.
+
 ## D23 - Spatial controls work beyond a mouse
 
 Superseded by D25: the decorative layer toggle has been removed.
