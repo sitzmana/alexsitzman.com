@@ -2,4 +2,4 @@
 title: Playing Guitar
 ---
 
-I practice guitar daily. I love to practice new techniques and styles.
+I practice guitar every day and enjoy learning new techniques and styles.

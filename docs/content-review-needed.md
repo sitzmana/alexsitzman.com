@@ -36,34 +36,38 @@ a résumé or email signature.
 
 ---
 
-## 3. "What I'm Listening To" was non-functional
+## 3. Music restored; snapshot wording is intentional
 
-The old About page had a Spotify section with previous/next buttons and no content
-between them. It rendered as an empty region with two unlabelled controls.
+The initial audit saw an empty region. A rendered revisit on September 17, 2026
+showed twelve actual tracks with artists and Spotify links. The earlier claim
+that this feature was non-functional was too broad.
 
-**Carried over as:** not rebuilt. A Spotify integration needs a runtime API call, a
-refresh-token store, and a server or scheduled job — all of which conflict with a static
-site with no backend.
+**Carried over as:** twelve files in `content/listening/`, presented as a native
+record shelf with original CSS artwork. Titles, artists, and links are preserved.
+There is no Spotify embed, album-art download, token store, or runtime API.
 
-The old "Did you know" list contained the line *"The music section below uses the spotify
-api to maintain current songs"*, which only makes sense alongside a working music section.
-It was **not** carried over. The other three facts were.
+The old fact saying the site uses the Spotify API to maintain current songs is
+still omitted because it would be false for this implementation.
 
-**Action:** decide whether you want this back. If yes, the cheapest approach is a
-scheduled GitHub Action that writes `content/now/listening.md` on a timer, so the site
-stays static. Say the word and it can be built.
+**Action:** update the files and dated section note when curating the shelf.
+Automated refresh is not implemented or implied.
 
 ---
 
-## 4. The GitHub repository list never loaded
+## 4. GitHub features restored as verified public snapshots
 
-The old About page showed "Latest Repositories" followed by a permanent
-"Loading repositories..." message — a client-side fetch that did not complete.
+The initial audit saw a loading placeholder, not evidence that the feature never
+worked. The September 17, 2026 rendered revisit and public GitHub data confirmed
+five repositories. They now live in `content/repositories/`; GoMud and Terraform
+are explicitly labelled as forks.
 
-**Carried over as:** not rebuilt, for the same reason as item 3.
+`content/activity/010-github-2026.md` records the verified public contribution
+calendar from January 1 through September 17, 2026: one on February 19, four on
+August 25, and one on September 15. No future dates or synthetic activity were added.
+The calendar has a visible dated/count list as well as the visual grid.
 
-**Action:** decide whether you want it. Same scheduled-Action approach would work, and
-would additionally remove the loading flash and the rate-limit risk.
+**Action:** keep snapshot notes consistent when updating the data. Counts are
+public GitHub activity, not a complete measure of work or productivity.
 
 ---
 
@@ -72,7 +76,7 @@ would additionally remove the loading flash and the rate-limit risk.
 The old home page rendered "Good morning," / "Good afternoon," based on the visitor's
 browser clock.
 
-**Carried over as:** a static "Hello," set in `HeroSection.razor`.
+**Carried over as:** a static greeting, now editable as `hero.greeting` in `content/site.yml`.
 
 A statically generated page cannot know the reader's local time, and baking the build
 server's time into the HTML would show "Good morning" to someone reading at midnight.
@@ -143,5 +147,30 @@ Carried over verbatim; confirm they are still accurate:
   — neither had an issue date, expiry, or verification link on the old site. Both
   certifications expire; adding `links:` with a credential verification URL would
   strengthen them considerably.
-- Current focus: "AKS Mastodon Server" — still current?
 - "I rowed for 7 years in high school and college"
+
+## 10. Converter terminology needs clarification
+
+The original DAS Driver summary called the device a "digital analog converter"
+while describing voltage sampling. The shortened card now describes the PCI
+driver and timestamped samples without choosing a conversion direction.
+Confirm the device terminology before expanding this into a technical case study.
+
+## 11. Additional credentials supplied by Alex
+
+On September 17, 2026, Alex supplied CKS, CKAD, KCNA, KCSA, and Kubestronaut,
+confirming that "KCNS" was a typo for KCSA. These are now listed alongside the
+existing credentials. Kubestronaut is presented as recognition, not a separate exam.
+
+Award dates, expiry dates, credential IDs, and personal verification links were
+not supplied. Leave them unset until provided; do not use a generic program page
+as if it verified Alex's individual credential.
+
+## 12. Current learning goal confirmed
+
+On September 18, 2026, Alex confirmed that the Mastodon server project was
+abandoned and that he is working towards Golden Kubestronaut. Now and Explorer
+show that goal as **In progress**; it is not added to the earned credentials.
+
+An exam-by-exam plan, target date, and further completion details were not
+supplied. Do not infer those from the existing credential list.

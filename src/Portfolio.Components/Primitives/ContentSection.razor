@@ -1,20 +1,35 @@
 @* Shared frame for every page section: anchor target, technical index label, heading. *@
 
-<section class="section" id="@Key" data-section="@Key">
+<section class="@(Compact ? "section section--compact" : "section")" id="@Key" data-section="@Key" tabindex="-1">
     <div class="shell">
-        <header class="section__head reveal">
-            <p class="section__eyebrow">
-                <span class="section__index">@Index.ToString("00", CultureInfo.InvariantCulture)</span>
-                <span class="section__rule" aria-hidden="true"></span>
-                <span class="section__key">@Key</span>
-            </p>
-            <h2 class="section__title">@Title</h2>
-            @if (!string.IsNullOrWhiteSpace(Lead))
+        @if (Compact)
+        {
+            <h2 class="visually-hidden">@Copy.Title</h2>
+            @if (!string.IsNullOrWhiteSpace(Copy.Lead))
             {
-                <p class="section__lead">@Lead</p>
+                <p class="section__lead section__intro">@Copy.Lead</p>
             }
-        </header>
+        }
+        else
+        {
+            <header class="section__head reveal">
+                <p class="section__eyebrow">
+                    <span class="section__index">@Index.ToString("00", CultureInfo.InvariantCulture)</span>
+                    <span class="section__rule" aria-hidden="true"></span>
+                    <span class="section__key">@(Copy.Label ?? Key)</span>
+                </p>
+                <h2 class="section__title">@Copy.Title</h2>
+                @if (!string.IsNullOrWhiteSpace(Copy.Lead))
+                {
+                    <p class="section__lead">@Copy.Lead</p>
+                }
+            </header>
+        }
         @ChildContent
+        @if (!string.IsNullOrWhiteSpace(Copy.Note))
+        {
+            <p class="section__note">@Copy.Note</p>
+        }
     </div>
 </section>
 
@@ -25,14 +40,16 @@
     [Parameter, EditorRequired]
     public required string Key { get; set; }
 
-    [Parameter, EditorRequired]
-    public required string Title { get; set; }
-
-    [Parameter]
-    public string? Lead { get; set; }
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    [Parameter]
+    public bool Compact { get; set; }
+
     private int Index => Context?.Index ?? 1;
+
+    private SectionCopy Copy => Content.Site.Sections[Key];
 }

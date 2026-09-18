@@ -20,6 +20,11 @@ public static class SectionRegistry
         ["facts"] = typeof(FactsSection),
         ["connect"] = typeof(ConnectSection),
         ["contact"] = typeof(ContactSection),
+        ["activity"] = typeof(ActivitySection),
+        ["repositories"] = typeof(RepositoriesSection),
+        ["listening"] = typeof(ListeningSection),
+        ["explorer"] = typeof(ExplorerSection),
+        ["credential-highlight"] = typeof(CredentialHighlightSection),
     };
 
     /// <summary>Valid <c>sections:</c> keys, alphabetically.</summary>

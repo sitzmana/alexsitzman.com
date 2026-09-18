@@ -24,4 +24,49 @@ public sealed class SiteConfig
     public string Description { get; init; } = "";
 
     public ContentLink[] Social { get; init; } = [];
+
+    public HeroContent Hero { get; init; } = new();
+
+    public ExplorerCopy? Explorer { get; init; }
+
+    public PageNavigationCopy? PageNavigation { get; init; }
+
+    public Dictionary<string, SectionCopy> Sections { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed class PageNavigationCopy
+{
+    public string ContentsLabel { get; init; } = "";
+
+    public string BackToTopLabel { get; init; } = "";
+}
+
+public sealed class HeroContent
+{
+    public string? Greeting { get; init; }
+
+    public string? Summary { get; init; }
+
+    public string? SceneLabel { get; init; }
+
+    public string? SceneHint { get; init; }
+
+    public ContentLink[] Links { get; init; } = [];
+}
+
+public sealed class SectionCopy
+{
+    public ContentLink[] Links { get; init; } = [];
+
+    public string? Label { get; init; }
+
+    public string Title { get; init; } = "";
+
+    public string? Lead { get; init; }
+
+    public string? Note { get; init; }
+
+    public string? PreviousLabel { get; init; }
+
+    public string? NextLabel { get; init; }
 }

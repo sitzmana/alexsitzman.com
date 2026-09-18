@@ -3,7 +3,7 @@
 
 <SiteHeader CurrentRoute="@Page.Route" />
 
-<main id="main" class="main">
+<main id="main" class="main" tabindex="-1">
     @if (ShowHeading)
     {
         <div class="page-head">
@@ -13,12 +13,25 @@
                     <p class="page-head__eyebrow">@Page.Eyebrow</p>
                 }
                 <h1 class="page-head__title">@(Page.Heading ?? Page.Title)</h1>
-                @if (Page.HasBody)
-                {
-                    <div class="prose prose--lead">@((MarkupString)Page.BodyHtml)</div>
-                }
             </div>
         </div>
+    }
+
+    @if (!HasHero && Page.BodyHeadings.Length > 0)
+    {
+        <PageContents Headings="Contents" />
+    }
+
+    @if (Page.HasBody)
+    {
+        <div class="shell page-body">
+            <div class="prose @(Page.BodyHeadings.Length > 0 ? "prose--article" : "prose--lead")">@((MarkupString)Page.BodyHtml)</div>
+        </div>
+    }
+
+    @if (!HasHero && Page.BodyHeadings.Length == 0)
+    {
+        <PageContents Headings="Contents" />
     }
 
     @foreach (var (key, index) in Page.Sections.Select((s, i) => (s, i + 1)))
@@ -26,20 +39,36 @@
         <CascadingValue Value="new SectionContext(index)" IsFixed="true">
             <DynamicComponent Type="SectionRegistry.Resolve(key, Page.SourcePath)" />
         </CascadingValue>
+        @if (key.Equals("hero", StringComparison.OrdinalIgnoreCase))
+        {
+            <PageContents Headings="Contents" />
+        }
     }
 </main>
 
 <SiteFooter />
 
 @code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
     [Parameter, EditorRequired]
     public required Page Page { get; set; }
+
+    private bool HasHero => Page.Sections.Contains("hero", StringComparer.OrdinalIgnoreCase);
+
+    private ContentHeading[] Contents =>
+    [
+        .. Page.BodyHeadings,
+        .. Page.Sections.Where(key => !key.Equals("hero", StringComparison.OrdinalIgnoreCase))
+            .Select(key => new ContentHeading(key.ToLowerInvariant(), Content.Site.Sections[key.ToLowerInvariant()].Title)),
+    ];
 
     /// <summary>
     /// The hero carries its own h1, so a page that leads with it skips the page head.
     /// Blank <c>heading</c> in front matter also suppresses it.
     /// </summary>
     private bool ShowHeading =>
-        !Page.Sections.Contains("hero", StringComparer.OrdinalIgnoreCase)
+        !HasHero
         && (Page.Heading ?? Page.Title) is { Length: > 0 };
 }

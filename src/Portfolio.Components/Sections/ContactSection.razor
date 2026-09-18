@@ -1,8 +1,7 @@
 @* Closing call to action. A mailto link rather than a form: a form would need a
    server or a third-party endpoint, and the site is deliberately static. *@
 
-<ContentSection Key="contact" Title="Get in touch"
-                Lead="Open to conversations about cloud-native infrastructure, Kubernetes, and Azure.">
+<ContentSection Key="contact">
     @if (!string.IsNullOrWhiteSpace(Content.Site.Email))
     {
         <div class="contact reveal">

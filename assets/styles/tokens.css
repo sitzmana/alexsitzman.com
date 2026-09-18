@@ -7,16 +7,16 @@
 
   /* ---- Colour ------------------------------------------------------- */
   --bg: #080b12;
-  --bg-raised: #0d121c;
+  --bg-raised: #101620;
   --surface: rgb(255 255 255 / 2.5%);
   --surface-hover: rgb(255 255 255 / 5%);
 
   --border: rgb(148 163 184 / 14%);
   --border-strong: rgb(148 163 184 / 30%);
 
-  --text: #e8eef8;
-  --text-muted: #9aa7bd;
-  --text-subtle: #7787a0;
+  --text: #f0f3f8;
+  --text-muted: #a8b3c5;
+  --text-subtle: #8997ad;
 
   --accent: #4db8ff;
   --accent-bright: #8ad2ff;
@@ -25,6 +25,12 @@
   --on-accent: #06101c;
 
   --grid-line: rgb(148 163 184 / 7%);
+  --glow: rgb(77 184 255 / 16%);
+  --plate: #142334;
+  --plate-edge: #3e6688;
+  --plate-highlight: #b7dcf8;
+  --print-bg: #ffffff;
+  --print-text: #111111;
 
   /* ---- Type --------------------------------------------------------- */
   --font-sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system,
@@ -36,15 +42,17 @@
   --step-0: clamp(1rem, 0.97rem + 0.16vw, 1.0625rem);
   --step-1: clamp(1.125rem, 1.07rem + 0.28vw, 1.3125rem);
   --step-2: clamp(1.375rem, 1.24rem + 0.66vw, 1.75rem);
-  --step-3: clamp(1.625rem, 1.36rem + 1.3vw, 2.5rem);
-  --step-4: clamp(2rem, 1.45rem + 2.7vw, 3.5rem);
-  --step-5: clamp(2.5rem, 1.5rem + 4.8vw, 5rem);
+  --step-3: clamp(2rem, 1.15rem + 3vw, 3.75rem);
+  --step-4: clamp(2.75rem, 1.2rem + 5vw, 5.5rem);
+  --step-5: clamp(3.5rem, 1.8rem + 6vw, 7.25rem);
+  --hero-greeting: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
 
   --leading-tight: 1.08;
   --leading-snug: 1.3;
   --leading-normal: 1.65;
 
-  --tracking-tight: -0.022em;
+  --tracking-tight: -0.04em;
+  --tracking-display: -0.065em;
   --tracking-wide: 0.14em;
 
   /* ---- Space -------------------------------------------------------- */
@@ -58,12 +66,14 @@
   --space-8: 3rem;
   --space-9: 4rem;
   --space-10: 5rem;
-  --section-y: clamp(3.5rem, 2rem + 7vw, 7.5rem);
+  --section-y: clamp(4rem, 2rem + 6vw, 7rem);
+  --hero-y: clamp(3rem, 1rem + 5vw, 6rem);
+  --page-y: clamp(3rem, 1.5rem + 5vw, 6rem);
 
   /* ---- Shape -------------------------------------------------------- */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 24px;
   --radius-pill: 999px;
 
   --shadow-raised: 0 1px 0 0 rgb(255 255 255 / 4%) inset,
@@ -72,14 +82,69 @@
     0 24px 48px -24px rgb(0 0 0 / 95%);
 
   /* ---- Layout ------------------------------------------------------- */
-  --shell-max: 72rem;
+  --shell-max: 80rem;
   --shell-pad: clamp(1.25rem, 0.8rem + 2.2vw, 3rem);
   --measure: 68ch;
+  --measure-short: 34ch;
+  --hero-measure: 8ch;
+  --header-height: 4.5rem;
+  --anchor-offset: 6rem;
+  --target-size: 2.75rem;
+  --grid-size: 4.5rem;
+  --line: 1px;
+  --focus-width: 2px;
+  --focus-offset: 3px;
+  --dot-size: 7px;
+  --card-min: 19rem;
+  --art-height: clamp(12rem, 10rem + 6vw, 18rem);
+  --header-blur: 12px;
+
+  /* ---- Spatial content --------------------------------------------- */
+  --depth-perspective: 80rem;
+  --depth-angle: 4deg;
+  --depth-art: 2rem;
+  --depth-copy: 1rem;
+  --depth-edge: 0.75rem;
+  --deck-angle: -16deg;
+  --deck-roll: -4deg;
+  --deck-roll-last: 4deg;
+  --deck-pitch: 8deg;
+  --deck-height: 8rem;
+  --deck-max-width: 40rem;
+  --deck-hit-block: 2.5rem;
+  --deck-hit-inline: 1rem;
+  --deck-thumb: 8rem;
+  --deck-lift: 2rem;
+  --deck-shadow: 0 6px 0 var(--plate), 0 7px 0 var(--plate-edge),
+    0 24px 48px rgb(0 0 0 / 40%);
+  --project-height: clamp(23rem, 18rem + 16vw, 32rem);
+  --project-number: clamp(4rem, 2rem + 7vw, 8rem);
+  --activity-cell: 0.875rem;
+  --record-width: clamp(15rem, 12rem + 10vw, 20rem);
+  --record-aspect: 1.15;
+  --record-cover-lines: 3;
+  --record-angle: -12deg;
+  --record-shift: 18%;
+  --record-disc-size: 82%;
+  --record-disc-offset: 14%;
+  --record-groove: rgb(255 255 255 / 12%);
+  --record-label: #c8b8a1;
+  --record-cover: #283746;
+  --record-rule: #a6c2d8;
+  --disabled-opacity: 0.5;
+  --evidence-min: 18rem;
+  --contents-min: 16rem;
+  --credential-seal-size: clamp(5rem, 10vw, 9rem);
+  --field-size: 3rem;
+  --art-line-opacity: 0.45;
 
   /* ---- Motion ------------------------------------------------------- */
   --dur-fast: 120ms;
   --dur-base: 220ms;
   --dur-slow: 620ms;
+  --reveal-distance: 14px;
+  --reveal-stagger: 70ms;
+  --hover-lift: -3px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 

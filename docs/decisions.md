@@ -258,3 +258,157 @@ with `max-age=31536000, immutable` and HTML with `must-revalidate`.
 Authoring stays split across tokens / base / layout / components / motion; delivery is one
 request. The hash changes when the content changes, so an immutable cache is safe and a
 deploy can never serve stale CSS against new HTML.
+
+## D17 - Spatial design without a rendering engine
+
+The standalone hero described here is superseded by D25; the dependency and
+performance constraints remain.
+
+The hero uses original CSS plates in perspective, with small inline SVG circuits.
+Project artwork is selected by the `visual` key in each project's Markdown file.
+No WebGL engine, animation library, model download, webfont, or third-party request
+is added. Pointer movement schedules at most one pending animation frame; there is
+no idle render loop. Touch, reduced motion, and disabled JavaScript keep a static
+composition. Forced colors hides decorative artwork.
+
+This supersedes the earlier no-illustration direction while preserving D1 and D5:
+the site is still static .NET output with zero client-side dependencies.
+
+## D18 - Enhancements must actually be fail-open
+
+The original `.js .reveal` rule hid all reveal elements even if the external script
+never arrived. Only offscreen elements successfully registered with the reveal
+observer now receive `is-pending`. Hero content is never hidden. Initialization
+failure, keyboard focus, reduced-motion changes, printing, and back/forward cache
+restoration all keep or restore visibility.
+
+## D19 - Build away from the published output
+
+Render and validate a complete temporary site before updating the destination.
+Content errors and output collisions preserve the last good build. Unchanged
+published files retain their timestamps, reducing filesystem and sync churn.
+This replaces D14's unconditional output deletion; its bounded deletion retry is
+retained for temporary cleanup and removal of obsolete generated files.
+
+Publication is file-by-file, not a transactional deployment: an I/O failure during
+the copy phase can still require a rebuild. Assets are copied before HTML.
+The preview watcher coalesces bursts and queues changes arriving during a build
+instead of dropping them. Its worker and watchers are disposed on shutdown.
+
+## D20 - Browser-only test dependency
+
+Add pinned Python Playwright under `tests/browser/requirements.txt` for repeatable
+browser checks. It is test tooling only, not a build-time content dependency and
+never part of `dist/`. Production remains zero-dependency HTML/CSS/JavaScript.
+
+Both CI and deployment validation exercise Chromium at phone and desktop widths,
+script-blocking, disabled scripting, absent IntersectionObserver, forced colors,
+reduced motion, keyboard skip navigation, and pointer-idle behavior. No screenshots
+or telemetry are sent to third-party services. Local Edge is supported for
+development without an additional browser download.
+
+## D21 - Editorial copy is file-driven
+
+Hero copy, calls to action, section titles, and section introductions now live in
+`content/site.yml`, not Razor strings. A section referenced by a page must have
+copy under `sections` (except the separately configured hero). Unknown sections,
+missing titles, unsupported visuals, invalid links, and duplicate routes fail with
+the source filename. Project artwork is decorative, not a factual architecture
+diagram or claim about the project's implementation.
+
+## D22 - One validation pipeline per change
+
+`deploy.yml` calls the reusable `ci.yml` build job and consumes that run's artifact.
+CI no longer independently repeats the same build for each push or pull request.
+The shared gate includes credential scanning, .NET tests, exact byte budgeting,
+and browser regressions, so deployment cannot bypass the checks. CI retains a
+manual `workflow_dispatch` entry point. No deployment secret is passed into the
+read-only validation workflow.
+
+## D23 - Spatial controls work beyond a mouse
+
+Superseded by D25: the decorative layer toggle has been removed.
+
+The hero's layer control is a native, text-labelled toggle button with
+`aria-pressed`. It is available on keyboard and touch once the enhancement has
+initialized; without JavaScript it is hidden and the static illustration remains.
+Reduced motion changes layers immediately, without a transition. Only decorative
+artwork changes; all portfolio content remains readable throughout.
+
+## D24 - Static routes need real 404s
+
+Remove the SPA `navigationFallback` that served the 404 document with a success
+status for unknown paths. Keep the explicit 404 response override instead.
+Set revalidation globally so directory routes, not just `*.html` requests, receive
+the HTML cache policy; hashed assets override it with immutable caching.
+This follows Azure Static Web Apps' documented fallback and global-header rules.
+The browser harness also checks the interaction script under the configured CSP.
+
+## D25 - Depth belongs to useful content
+
+Replace the standalone initials chip and its decorative layer toggle with native
+links to actual projects. The hero index and main cards share `FeaturedProjects`;
+their titles, categories, order, artwork, and anchor IDs derive from the same files.
+Index links follow the projects-listing page rather than assuming it must be Home.
+
+Depth now operates on the project cards themselves. Stationary outer frames measure
+pointer position; inner surfaces tilt without geometry feedback. All summaries,
+tags, and links remain visible. Keyboard and touch activate real destinations, not
+a simulation of hover. No custom cursor, scroll interception, canvas, model, or
+new dependency is introduced.
+
+## D26 - Restore original features as honest snapshots
+
+A rendered revisit of the original About page on September 17, 2026 showed working
+music and GitHub sections, correcting the initial audit's loading/empty result.
+Restore its twelve actual Spotify-linked tracks, five repositories, and public
+contribution dates as Markdown/YAML collections. Public GitHub data establishes
+which repositories are forks; the UI labels them explicitly.
+
+These are dated snapshots, not a live feed, currently-playing status, or a claim
+that contribution count measures all work. No credentials, background fetching,
+third-party embeds, album covers, or brand logos are needed. Music uses original
+CSS record art and native links, with scrollable content available even when
+scripts are blocked. Previous/next buttons enhance the shelf without autoplay or
+duplicate slides. Any future automatic refresh needs a separate explicit decision.
+
+## D27 - Connect skills to content, not proficiency claims
+
+Add a file-driven Explorer page instead of a decorative network with invented
+relationships or skill percentages. Its catalog comes from actual project,
+credential, repository, and now entries. Only declared topics and repository
+languages create connections. Existing skill names become links only when such
+a connection exists. Forks, credentials, and work in progress retain their labels.
+
+The full catalog ships as static HTML. Native controls are disabled until
+enhancement initializes, and the no-script explanation stays honest. Local
+filtering uses a one-time text index, changes existing nodes, and makes no network
+request. Search URLs are shareable and support Back/Forward. Invalid filter
+values, unavailable clipboard access, and blocked history updates are surfaced.
+There is no new dependency, modal focus trap, server endpoint, or analytics.
+
+Move the complete credential collection to its own content page and let
+`featured: true` select the smaller home highlight. This reduces repeated home-page
+content on phones without losing any credential. Page files still determine
+routes, navigation, and section order; sitemap-driven browser checks cover additions.
+
+## D28 - Reading navigation is generated content, not a second outline
+
+Derive a compact contents panel from top-level Markdown h2 headings and each
+page's declared section titles. Show it only when there are at least three
+destinations; leave short pages uncluttered. Project detail pages use the same
+component. The implementation tour is a normal page file, not a special template.
+
+Use Markdig's existing automatic identifiers and scope them by collection and
+slug, with a double-hyphen boundary that normalized slugs cannot contain. Shared
+collection bodies cannot duplicate each other's heading IDs, even when a slug
+and a heading share words.
+Rewrite matching local Markdown fragments to those IDs, and make anchor targets
+focusable without adding them to the tab order. Reject empty headings at their
+source. Labels come from `site.yml` and the content itself.
+
+Navigation and the footer's return link are ordinary anchors. They work without
+scripts, preserve browser history, and follow the existing reduced-motion rules.
+The small enhancement marks the URL's current destination; there is no
+scroll-spy observer, sticky reading rail, or new dependency. Print omits the
+controls, not the content.

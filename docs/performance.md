@@ -1,118 +1,93 @@
 # Performance
 
-## Budget
+## Measured payload
 
-Set before implementation, enforced in CI by
-[.github/workflows/ci.yml](../.github/workflows/ci.yml). The build fails if the home page
-payload exceeds it.
+Measured from the September 18, 2026 Release output. Gzip is a local compression
+measurement, not a claim about a deployed CDN response.
 
-| Metric | Budget | Measured | Headroom |
-| --- | --- | --- | --- |
-| Home page total (HTML + CSS + JS, uncompressed) | 150 KB | **43.8 KB** | 71% |
-| Blocking requests before first paint | ≤ 2 | **1** (the stylesheet) | — |
-| Webfonts | 0 | **0** | — |
-| Third-party requests | 0 | **0** | — |
-| JavaScript frameworks | 0 | **0** | — |
-
-## Measured output
-
-Release build, `dotnet run --project src/Portfolio.Generator -c Release -- --output dist`.
-Gzip measured at `SmallestSize`; Azure Static Web Apps serves Brotli where the client
-supports it, which is typically smaller still.
-
-| File | Raw | Gzip |
+| Resource | Raw bytes | Gzip bytes |
 | --- | --- | --- |
-| `assets/site.<hash>.css` | 26,799 B | 5,882 B |
-| `index.html` | 15,045 B | 3,156 B |
-| `about/index.html` | 8,656 B | 2,278 B |
-| `now/index.html` | 6,103 B | 2,048 B |
-| `assets/enhance.<hash>.js` | 2,956 B | 1,117 B |
-| `404.html` | 2,061 B | 933 B |
-| `og.svg` | 1,676 B | 690 B |
-| `staticwebapp.config.json` | 1,350 B | 663 B |
-| `favicon.svg` | 424 B | 283 B |
-| `sitemap.xml` | 279 B | 163 B |
-| `robots.txt` | 73 B | 89 B |
-| **Whole site** | **63.9 KB** | **16.9 KB** |
+| Home HTML | 30,000 | 4,436 |
+| Shared stylesheet | 52,665 | 9,934 |
+| Enhancement script | 12,402 | 3,506 |
+| **Home HTML + CSS + JS** | **95,067** | **17,876** |
+| About HTML | 52,383 | 5,786 |
+| Now HTML | 7,166 | 2,241 |
+| Explore HTML | 31,018 | 5,046 |
+| Credentials HTML | 12,062 | 2,488 |
+| This site HTML | 12,907 | 3,791 |
+| Whole generated site | 216,614 | 40,008 |
 
-**A first visit to the home page transfers about 9.9 KB compressed** — HTML, stylesheet,
-and script combined. Every subsequent page is HTML only, because the CSS and JS are
-served immutably from cache.
+The home payload is **92.8 KiB raw / 17.5 KiB gzip**, below the **150 KiB**
+uncompressed budget. The project index, depth-enabled cards, record shelf, Explorer,
+and reading navigation deliberately add bytes over the old design; they do not add a browser framework,
+font download, model file, or third-party request.
 
-## What makes it small
+`scripts/check-performance.ps1` counts the actual bytes of the assets referenced
+by the home document. It fails at or above 153,600 bytes, rather than rounding each
+resource down to whole KiB. The shared CI/deployment pipeline runs this gate.
 
-- **No client runtime.** Static generation instead of Blazor WebAssembly removes a
-  multi-megabyte download. See D1 in [decisions.md](decisions.md).
-- **No webfont.** A system font stack. A single variable-font subset would be 25–60 KB —
-  larger than the entire current payload. See D6.
-- **No framework.** `enhance.js` is 2.9 KB of hand-written code and is `defer`-loaded, so
-  it never blocks rendering.
-- **No images.** The hero backdrop is CSS gradients and repeating linear gradients. The
-  favicon and Open Graph image are SVG, and the OG image is never fetched by a browser
-  during a normal visit.
-- **No third parties.** No analytics, no fonts, no CDN, no embeds. Zero DNS lookups beyond
-  the origin.
+## Browser work
 
-## Core Web Vitals position
+- Static .NET-generated HTML; no production application server or .NET download.
+- One stylesheet and one deferred script, shared across pages.
+- Original inline SVG and CSS artwork, with no external image request.
+- Hero hover animates only a visual surface inside a stationary link. It needs
+  no JavaScript, pointer listeners, geometry reads, or polling.
+- The hero heading is visible immediately; it never waits for an observer.
+- Only offscreen reveal targets are observed, and each is unobserved on reveal.
+- The former unused active-section observer has been removed.
+- Pointer events coalesce into at most one pending animation frame. Each frame
+  reads geometry before writing styles. There is no continuous render loop.
+- Tilt resets on pointer exit/cancellation, page hiding, loss of window focus,
+  and motion-preference changes. Touch does not register tilt listeners.
+- Shelf controls run only on input, scroll, resize, or motion-preference changes.
+  There is no autoplay, polling, runtime GitHub request, or Spotify embed.
+- Reduced motion also cancels a shelf scroll already in progress.
+- Explorer prepares its text/topic index once and filters existing elements on
+  input. Address-bar updates are debounced; there is no search API or idle polling.
+- The home credential collection is now a smaller featured panel; the complete
+  collection lives on its own page rather than lengthening the mobile homepage.
+- Contents links and heading anchors are generated at build time. Current-location
+  marking reuses the existing hash-change handling, without a scroll-spy observer,
+  layout-measuring loop, or another browser dependency.
 
-No Lighthouse run has been performed, so no score is claimed. The structural risks that
-drive each metric were reviewed:
+Browser regressions assert no new animation-frame requests while the pointer is
+idle and less than 0.01 measured home-page layout shift during enhancement initialization.
+These checks do not establish device-wide zero CPU usage.
 
-**LCP** — the largest element is the hero heading, which is text in the initial HTML
-response with no webfont to wait for. It is not inside a `.reveal` wrapper that would
-delay it behind an `IntersectionObserver`; the hero reveals immediately on load.
+## Build and preview efficiency
 
-**CLS** — the main risk in this design is the reveal animation. It animates `opacity` and
-`transform` only, both of which are compositor properties that do not affect layout.
-Elements occupy their final space before they become visible, so revealing shifts nothing.
-There are no ads, embeds, or late-loading images.
+The generator builds in a temporary directory and publishes only changed files.
+Unchanged files retain timestamps, reducing filesystem writes and sync activity.
+Content/rendering failures preserve the last good preview. The watcher coalesces
+bursts and retains events arriving during a build.
 
-**INP** — there is no JavaScript in the interaction path. Navigation is plain links;
-hover and focus styling is CSS. The only scripted work is three `IntersectionObserver`
-callbacks that toggle a class, and each observer calls `unobserve` after firing.
+Person JSON-LD is serialized once per build, not once per page. Asset hashing and
+writing reuse the same UTF-8 byte array. Output accounting includes copied assets.
 
-## Caching
+Deployment now calls the reusable CI workflow instead of independently repeating
+the same build and test steps. Validation still gates the deployable artifact.
 
-Set in [static/staticwebapp.config.json](../static/staticwebapp.config.json):
+## Caching and missing routes
 
-| Path | `Cache-Control` |
-| --- | --- |
-| `/assets/*` | `public, max-age=31536000, immutable` |
-| `/*.html` | `public, max-age=0, must-revalidate` |
+Global responses revalidate with `public, max-age=0, must-revalidate`, including
+directory routes such as `/about/`. Content-hashed `/assets/*` files override
+this with `public, max-age=31536000, immutable`.
 
-Assets carry a content hash in the filename, so a one-year immutable cache is safe — a
-changed stylesheet gets a new URL. HTML revalidates on every request, so a deploy is
-visible immediately and can never pair new HTML with a stale stylesheet.
+There is no SPA navigation fallback. Unknown routes use the explicit 404
+response override rather than returning success with a missing-page document.
+Hosted behavior must still be checked after deployment; no deployment was made
+as part of this revision.
 
-## Animation cost
-
-Every animated property is `opacity` or `transform`, which stay on the compositor and do
-not trigger layout or paint. No `width`, `height`, `top`, or `margin` is animated
-anywhere.
-
-The scroll progress bar uses CSS `animation-timeline: scroll()` where supported, so there
-is no scroll event listener and no work on the main thread during scrolling. Where
-unsupported, it simply does not animate — there is no JavaScript fallback, by choice.
-
-There is no continuously running animation. Nothing moves unless the user scrolls, hovers,
-or focuses. Idle CPU is zero, which matters on battery.
-
-## Known limitations
-
-- **No Lighthouse or WebPageTest run.** Payload is measured and enforced; field metrics
-  are not.
-- **No real-device testing.** Responsive behaviour was verified in Chromium at seven
-  viewport widths, not on physical hardware.
-- **CSS ships whole.** All 26.8 KB is delivered to every page, including rules for
-  sections that page does not use. Splitting per-page would save perhaps 30% of 5.9 KB
-  gzipped, at the cost of losing the shared immutable cache across navigations. Not worth
-  it at this size.
-- **No Brotli measurement.** Azure applies it at the edge; the figures above are gzip.
-
-## Re-measuring
+## Reproducing
 
 ```pwsh
-dotnet run --project src/Portfolio.Generator -c Release -- --output dist
-Get-ChildItem -Recurse -File dist | Sort-Object Length -Descending |
-  Select-Object @{n='KB';e={[math]::Round($_.Length/1KB,1)}}, Name
+dotnet build Portfolio.slnx -c Release
+dotnet run --project src\Portfolio.Generator -c Release --no-build -- --output dist
+.\scripts\check-performance.ps1
 ```
+
+See `docs/testing.md` for browser checks. No Lighthouse score, field Core Web
+Vitals measurement, Brotli transfer measurement, or real-device battery result
+is claimed. The stylesheet still ships as a single shared bundle.

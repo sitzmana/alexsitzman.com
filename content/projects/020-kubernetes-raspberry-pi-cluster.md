@@ -1,15 +1,17 @@
 ---
 title: Kubernetes Raspberry Pi Cluster
 featured: true
+visual: stack
+category: Infrastructure
 summary: >-
-  A cluster made of Raspberry Pis running Kubernetes to act as a home network ad-blocker,
-  streaming center, cloud photo storage and VPN.
+  A Raspberry Pi Kubernetes cluster for network-wide ad blocking,
+  media streaming, cloud photo storage, and a VPN.
 tags:
   - Kubernetes
   - Network Administration
   - Security
 links:
-  - label: Write-up
+  - label: Read the write-up
     url: https://blog.alexsitzman.com/blogs/pi-cluster
     icon: article
 ---

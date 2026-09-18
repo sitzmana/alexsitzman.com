@@ -1,195 +1,92 @@
 # Accessibility
 
-Target: **WCAG 2.2 AA**.
+The target remains WCAG 2.2 AA. The checks below are useful regressions, **not a
+claim of complete conformance**.
 
-Automated checks catch a minority of accessibility problems. This document separates
-what was *measured* from what was *reviewed by reading the markup*, and states what has
-not been verified at all.
+## Verified in the September 18, 2026 browser pass
 
----
+The persisted harness is `tests/browser/check_site.py`; commands are in
+`docs/testing.md`.
 
-## Measured
+- All six routes fit 320, 375, 768, 1024, and 1440 px without horizontal overflow.
+- Each real page has one h1, unique element IDs, and text-labelled controls.
+- The first tab stop is Skip to content; activating it moves focus to `main`.
+- JavaScript-disabled, script-blocked, and missing-IntersectionObserver contexts
+  retain visible content at 320 and 1440 px.
+- Reduced motion reveals all content, disables the progress bar, stops tilt,
+  and removes transitions. Changes to this preference work without reloading.
+- Project index links work with keyboard, pointer, touch, and disabled scripting.
+  They focus the corresponding project, visible below the sticky header.
+- Hero link hit areas remain stationary during animation. Corners and edges retain
+  their target, while non-interactive visual layers cannot intercept pointer input.
+- The record shelf supports native keyboard scrolling and touch swiping, with
+  optional text-labelled previous/next buttons and correctly disabled endpoints.
+- Forced colors leaves text opaque and hides decorative artwork.
+- Print reveals content and uses a light, ink-friendly palette.
+- Long tags and additional navigation entries remain within a 320 px viewport.
+- Explorer uses labelled native inputs and buttons, `aria-pressed` selection,
+  result announcements, explicit empty/error states, and stable search focus.
+- Search/filter controls remain disabled when scripts are unavailable, with an
+  explanation and the entire linked catalog still visible.
+- Clipboard denial exposes a labelled, selected link for manual copying.
+- Long-page contents and return-to-top links have 44 px targets, move native
+  keyboard focus, and preserve Back/Forward behavior at 320 and 1440 px, including
+  disabled/blocked scripts and forced colors.
+- Direct heading fragments remain usable after reload. Selected sections reveal
+  their content immediately; print hides the controls, not the article headings.
 
-Run against the generated site in Chromium via Playwright. Reproduce with the commands in
-[testing.md](testing.md).
+The 3D effects are never a prerequisite for understanding the portfolio. The
+project index remains meaningful navigation in flat form. Only the original
+project artwork and record-sleeve art are `aria-hidden`; full titles, artists,
+categories, and links remain available.
 
-### Colour contrast
+## Structural safeguards
 
-Every text node on the home page was measured against its computed background, with the
-4.5:1 threshold for normal text and 3:1 for large text.
+Navigation uses native links, labelled navigation landmarks, `aria-current`, and
+weight as well as colour. Shelf controls are native buttons, not clickable divs,
+and stay hidden until enhancement makes them usable. Missing labels fail the build.
 
-| Result | Detail |
-| --- | --- |
-| Violations | **0** |
-| Elements checked | All text-bearing `p`, `span`, `a`, `li`, `h1`–`h4`, `dt`, `dd` |
+The global focus outline is not removed. Main landmarks are programmatically
+focusable for skip navigation. No positive tabindex, focus trap, modal, custom
+cursor, or scroll hijacking is introduced.
 
-Two initial failures were reported and both were fixed:
+Project titles link to their detail page when present, otherwise to the existing
+first outbound link. Project cards have no full-card link overlay that could
+obscure their independent links. New-tab links retain their accessible announcement
+and safe rel values.
 
-- `.hero__name` and `.wordmark__mark` computed to `color: transparent`. This was a real
-  defect, not a measurement artefact — see D12 in [decisions.md](decisions.md). Both now
-  fall back to an opaque colour outside `@supports`.
+Contribution activity includes a total, an explicit period, and a visible list of
+every nonzero date/count. The visual calendar is an optional scroll region, with
+active days distinguished by a plus sign as well as colour. It is not a live feed
+or an assertion that contribution count measures all work.
 
-Token contrast ratios against `--bg` (`#080b12`):
+Tags wrap rather than overflowing. Numbered Markdown lists retain their numbering;
+code blocks and tables scroll within the prose region instead of widening the page.
+Explorer inputs use the normal body font size; controls stack on narrow screens.
+Printing retains the complete catalog rather than hiding nonmatching entries.
 
-| Token | Hex | Ratio | Use |
-| --- | --- | --- | --- |
-| `--text` | `#e8eef8` | ~16.8:1 | Body and headings |
-| `--text-muted` | `#9aa7bd` | ~8.1:1 | Secondary prose |
-| `--text-subtle` | `#7787a0` | ~5.4:1 | Metadata, labels |
-| `--accent` | `#4db8ff` | ~9.0:1 | Links, markers |
-| `--accent-bright` | `#8ad2ff` | ~11.9:1 | Link text on dark |
+Section headings and introductions are editable in YAML. Missing section copy,
+duplicate sections, malformed links, and duplicate routes fail before publication.
+Contents labels derive from those section titles and plain-text Markdown headings.
+Heading IDs are scoped by collection and slug with an unambiguous separator, so
+shared bodies and layout elements cannot create duplicate targets. Empty headings
+and incomplete navigation labels fail with their source file.
 
-The lowest is 5.4:1, above the 4.5:1 requirement.
+## Colour and motion
 
-### Target size (2.5.8, AA — 24×24 CSS px)
+Text uses opaque high-contrast tokens against the dark background and card fill.
+Gradient hero text has an opaque fallback and a forced-colors override. Status
+and selection use text, weight, shape, or ARIA alongside colour.
 
-| Result | Detail |
-| --- | --- |
-| Violations | **0** at 390 px viewport |
+Only successfully observed offscreen reveal targets get `is-pending`; neither
+the `js` class nor a failed external script can hide the page. Focus-within also
+reveals a pending target. Print and back/forward restoration clear pending reveals.
 
-One failure was found and fixed: the plain-text email address under the contact button
-was 161×15 px. It now has `min-height: 2.75rem`.
+## Not yet verified
 
-Interactive elements use `min-height: 2.75rem` (44 px) where they are not already larger —
-above the AA minimum and at the AAA 44×44 threshold.
-
-### Reflow (1.4.10) and horizontal scrolling
-
-Measured as `scrollWidth - clientWidth` on every route.
-
-| Viewport | `/` | `/about/` | `/now/` |
-| --- | --- | --- | --- |
-| 320 px | 0 | 0 | 0 |
-| 375 px | 0 | 0 | 0 |
-| 390 px | 0 | 0 | 0 |
-| 768 px | 0 | 0 | 0 |
-| 1024 px | 0 | 0 | 0 |
-| 1440 px | 0 | 0 | 0 |
-| 1920 px | 0 | 0 | 0 |
-
-No horizontal overflow at any tested width. `overflow-wrap: break-word` on `body` prevents
-long technical terms from forcing a scrollbar.
-
-### Motion (2.3.3)
-
-With `prefers-reduced-motion: reduce`:
-
-| Check | Result |
-| --- | --- |
-| Reveal elements hidden | **0 of 18** |
-| Scroll progress bar | `display: none` |
-| `IntersectionObserver` constructed | No — content is revealed immediately |
-
-### Scripting unavailable
-
-Not a WCAG criterion, but it determines whether the page exists for anything that does not
-run JavaScript.
-
-| Check | Result |
-| --- | --- |
-| `<html>` class | `no-js` (never swapped) |
-| Reveal elements hidden | **0 of 18** |
-| Body text rendered | 2,036 characters |
-| Section headings present | 4 |
-
-The page is complete without JavaScript.
-
-### Keyboard focus
-
-First eight tab stops on the home page:
-
-| Order | Element | Visible focus indicator |
-| --- | --- | --- |
-| 1 | Skip to content | Yes |
-| 2 | Wordmark → home | Yes |
-| 3 | Home | Yes |
-| 4 | About | Yes |
-| 5 | Now | Yes |
-| 6 | GitHub | Yes |
-| 7 | LinkedIn | Yes |
-| 8 | Dev.to | Yes |
-
-Focus order follows DOM order, which follows visual order. There is no `tabindex` above 0
-anywhere in the codebase, and no focus trap — there is no modal, drawer, or overlay.
-
-`:focus-visible` gives a 2 px `--accent-bright` outline at 3 px offset, which contrasts
-~11.9:1 against the background.
-
----
-
-## Reviewed in markup
-
-Verified by reading the rendered HTML and the accessibility tree, and asserted in tests
-where practical.
-
-### Structure
-
-- One `<h1>` per page. Asserted for all routes.
-- Heading levels descend without skipping: page `h1` → section `h2` → card `h3` → nested
-  `h4` in the grouped "now" list.
-- Landmarks: one `banner`, one `main`, one `contentinfo`, `navigation` labelled "Primary"
-  and "Footer".
-- `<html lang="en">` on every page. Asserted in tests.
-- Skip link is the first focusable element, targets `#main`, and is visible on focus.
-  Asserted in tests.
-
-### Links and controls
-
-- Every link has a text accessible name. There are no icon-only links.
-- Links opening a new tab append a visually hidden "(opens in a new tab)".
-- External links carry `rel="noopener noreferrer"`; profile links add `rel="me"`.
-- The current page is marked three ways — `aria-current="page"`, a background tint, and
-  heavier weight — so it is never signalled by colour alone (1.4.1).
-- Project cards use a full-surface pseudo-element on the title link, so the whole card is
-  clickable while exactly one link exists in the accessibility tree. Nested links inside a
-  card (`.entry-link`) are raised above it so they remain independently clickable.
-
-### Images and decoration
-
-- Decorative SVG glyphs: `aria-hidden="true"` and `focusable="false"`.
-- Decorative layout elements (hero grid, glow, bullet markers, progress bar):
-  `aria-hidden="true"`, or empty `<span>` with no text content.
-- No content images ship with the site today. Images added beside a content file are
-  authored in Markdown, where alt text is `![alt](file)` — **alt text is the author's
-  responsibility and is not currently enforced by a test.**
-
-### Content semantics
-
-- Tag lists are `<ul>`/`<li>` with an `aria-label` naming their entry, so a screen reader
-  announces "Technologies used in Kubernetes Raspberry Pi Cluster, list, 3 items".
-- The project factsheet is a `<dl>` with grouped `<div>` wrappers.
-- No ARIA is used where native HTML suffices. The only ARIA present is `aria-label`,
-  `aria-current`, and `aria-hidden`.
-
-### Zoom (1.4.4)
-
-Type is set in `rem` on a fluid `clamp()` scale with no `maximum-scale` or
-`user-scalable=no` in the viewport meta tag. Layout uses `auto-fit` grid tracks with
-`minmax()`, so columns collapse rather than clip as the effective viewport narrows under
-zoom.
-
----
-
-## Not verified
-
-Stated rather than implied.
-
-- **No screen reader has been used.** Structure was confirmed via the accessibility tree,
-  which is not the same as listening to NVDA, JAWS, or VoiceOver read the page.
-- **No axe-core or Lighthouse accessibility scan has been run.** The contrast and target
-  checks above are custom measurements, not a full automated ruleset.
-- **Only Chromium was tested.** No Firefox or WebKit verification.
-- **No testing with users of assistive technology.**
-- **Windows High Contrast Mode / forced-colors has not been tested.** The gradient text
-  and translucent surfaces are the likely risk areas.
-- **Alt text on author-supplied images is unenforced.** A test asserting that every
-  Markdown image has non-empty alt text would close this.
-
-## Reproducing the measurements
-
-```pwsh
-dotnet run --project src/Portfolio.Generator -- --serve --port 5173
-```
-
-Then drive `http://localhost:5173` with Playwright. The exact scripts used are recorded in
-[testing.md](testing.md).
+- No NVDA, JAWS, or VoiceOver session.
+- No full automated accessibility ruleset or exhaustive contrast audit.
+- No physical assistive-technology or high-contrast device testing.
+- No Firefox or WebKit run.
+- No automatic alt-text enforcement for author-supplied Markdown images.
+- No accessibility testing with users.

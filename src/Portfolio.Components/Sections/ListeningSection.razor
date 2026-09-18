@@ -1,0 +1,44 @@
+<ContentSection Key="listening">
+    <div class="listening" data-shelf>
+        <div class="shelf-controls" hidden>
+            <button type="button" class="chip" data-shelf-prev aria-controls="listening-shelf">
+                <IconGlyph Name="arrow-right" Class="is-flipped" />
+                <span>@Copy.PreviousLabel</span>
+            </button>
+            <button type="button" class="chip" data-shelf-next aria-controls="listening-shelf">
+                <span>@Copy.NextLabel</span>
+                <IconGlyph Name="arrow-right" />
+            </button>
+        </div>
+        <ol class="record-shelf" id="listening-shelf" tabindex="0" aria-label="@Copy.Title">
+            @foreach (var (track, index) in Content.Listening.Select((track, index) => (track, index + 1)))
+            {
+                <li class="record">
+                    <a class="record__link" href="@track.Links[0].Url" rel="noopener noreferrer" target="_blank">
+                        <div class="record__art" aria-hidden="true">
+                            <div class="record__disc"><span>@index.ToString("00", CultureInfo.InvariantCulture)</span></div>
+                            <div class="record__sleeve">
+                                <span class="record__number">@index.ToString("00", CultureInfo.InvariantCulture)</span>
+                                <span class="record__artist">@track.Artist</span>
+                                <span class="record__rule"></span>
+                            </div>
+                        </div>
+                        <div class="record__copy">
+                            <h3>@track.Title</h3>
+                            <p>@track.Artist</p>
+                            <span class="record__action">@track.Links[0].Label <IconGlyph Name="arrow-out" /></span>
+                            <span class="visually-hidden">(opens in a new tab)</span>
+                        </div>
+                    </a>
+                </li>
+            }
+        </ol>
+    </div>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    private SectionCopy Copy => Content.Site.Sections["listening"];
+}

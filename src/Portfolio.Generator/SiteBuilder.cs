@@ -1,10 +1,11 @@
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Portfolio.Components;
 using Portfolio.Components.Hosts;
 using Portfolio.Content;
 
@@ -19,24 +20,73 @@ internal sealed class SiteBuilder(BuildOptions options)
 
     public async Task<BuildResult> BuildAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateOutput();
+        var staging = Directory.CreateTempSubdirectory("portfolio-build-");
+        try
+        {
+            var result = await new SiteBuilder(options with { OutputRoot = staging.FullName })
+                .BuildCoreAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            Publish(staging.FullName);
+            return result;
+        }
+        finally
+        {
+            Retry(() => DeleteDirectory(staging));
+        }
+    }
+
+    private async Task<BuildResult> BuildCoreAsync(CancellationToken cancellationToken)
+    {
         var loader = new ContentLoader(options.ContentRoot, options.IncludeDrafts);
         var content = loader.LoadAll();
 
-        PrepareOutput();
+        foreach (var key in content.Site.Sections.Keys)
+        {
+            SectionRegistry.Resolve(key, "content/site.yml");
+            if (key != key.ToLowerInvariant())
+            {
+                throw new ContentException("content/site.yml", $"Section copy key '{key}' must be lowercase.");
+            }
+        }
+        foreach (var page in content.Pages)
+        {
+            var sections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var key in page.Sections)
+            {
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    throw new ContentException(page.SourcePath, "Section keys must not be empty.");
+                }
+                SectionRegistry.Resolve(key, page.SourcePath);
+                var normalized = key.ToLowerInvariant();
+                if (!sections.Add(normalized))
+                {
+                    throw new ContentException(page.SourcePath, $"Duplicate section '{key}'.");
+                }
+                if (normalized != "hero" && !content.Site.Sections.ContainsKey(normalized))
+                {
+                    throw new ContentException("content/site.yml",
+                        $"Missing section copy for '{normalized}', used by {page.SourcePath}.");
+                }
+            }
+        }
 
         var assets = AssetPipeline.Build(options.AssetsRoot, options.OutputRoot);
         var template = new DocumentTemplate(content.Site, assets);
+        var personJsonLd = BuildPersonJsonLd(content.Site);
 
         var services = new ServiceCollection();
         services.AddLogging(b => b.SetMinimumLevel(LogLevel.Warning));
         await using var provider = services.BuildServiceProvider();
         await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 
-        var written = new List<string>();
         var routes = new List<string>();
 
         foreach (var page in content.Pages)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var body = await RenderAsync<PageHost>(
                 renderer,
                 new Dictionary<string, object?> { ["Content"] = content, ["Page"] = page });
@@ -47,11 +97,11 @@ internal sealed class SiteBuilder(BuildOptions options)
                 Description = page.MetaDescription ?? content.Site.Description,
                 CanonicalUrl = DocumentTemplate.Combine(content.Site.BaseUrl, page.Route),
                 BodyHtml = body,
-                StructuredData = BuildPersonJsonLd(content.Site),
+                StructuredData = personJsonLd,
                 NoIndex = page.NoIndex,
             });
 
-            written.Add(WriteRoute(page.Route, document));
+            WriteRoute(page.Route, document);
             if (!page.NoIndex)
             {
                 routes.Add(page.Route);
@@ -60,6 +110,7 @@ internal sealed class SiteBuilder(BuildOptions options)
 
         foreach (var project in content.Projects.Where(p => p.HasBody))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var route = $"/projects/{project.Slug}/";
             var body = await RenderAsync<ProjectHost>(
                 renderer,
@@ -71,21 +122,25 @@ internal sealed class SiteBuilder(BuildOptions options)
                 Description = project.Summary ?? content.Site.Description,
                 CanonicalUrl = DocumentTemplate.Combine(content.Site.BaseUrl, route),
                 BodyHtml = body,
-                StructuredData = BuildPersonJsonLd(content.Site),
+                StructuredData = personJsonLd,
             });
 
-            written.Add(WriteRoute(route, document));
+            WriteRoute(route, document);
             routes.Add(route);
         }
 
-        written.Add(WriteNotFound(content, template));
+        WriteNotFound(content, template, personJsonLd);
         CopyContentAssets(content);
         CopyStaticFiles();
-        written.Add(WriteSitemap(content.Site.BaseUrl, routes));
-        written.Add(WriteRobots(content.Site.BaseUrl));
+        WriteSitemap(content.Site.BaseUrl, routes);
+        WriteRobots(content.Site.BaseUrl);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new BuildResult(written, routes, MeasureBytes());
+        return new BuildResult(
+            Directory.EnumerateFiles(options.OutputRoot, "*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(options.OutputRoot, path).Replace('\\', '/'))
+                .Order(StringComparer.Ordinal).ToArray(),
+            routes, MeasureBytes());
     }
 
     private static async Task<string> RenderAsync<TComponent>(
@@ -99,21 +154,89 @@ internal sealed class SiteBuilder(BuildOptions options)
             return output.ToHtmlString();
         });
 
-    private void PrepareOutput()
+    private void ValidateOutput()
     {
-        Directory.CreateDirectory(options.OutputRoot);
-
-        // Only ever clears the generated output folder, never the sources.
-        var root = new DirectoryInfo(options.OutputRoot);
-
-        foreach (var file in root.EnumerateFiles())
+        var output = Path.TrimEndingDirectorySeparator(Path.GetFullPath(options.OutputRoot));
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (output.Equals(Path.GetPathRoot(output), comparison))
         {
-            Retry(() => DeleteFile(file));
+            throw new InvalidOperationException("The filesystem root cannot be used as generated output.");
+        }
+        var repository = RepositoryRoot.Find();
+        var sources = new[] { options.ContentRoot, options.AssetsRoot, options.StaticRoot }
+            .Concat(new[] { "src", "tests", "docs", "scripts", ".github", ".git" }
+                .Select(folder => Path.Combine(repository, folder)));
+        foreach (var source in sources)
+        {
+            var input = Path.TrimEndingDirectorySeparator(Path.GetFullPath(source));
+            if (output.Equals(input, comparison)
+                || input.StartsWith(output + Path.DirectorySeparatorChar, comparison)
+                || output.StartsWith(input + Path.DirectorySeparatorChar, comparison))
+            {
+                throw new InvalidOperationException($"Output '{output}' must not overlap source '{input}'.");
+            }
         }
 
-        foreach (var directory in root.EnumerateDirectories())
+        for (var directory = new DirectoryInfo(output); directory is not null; directory = directory.Parent)
         {
-            Retry(() => DeleteDirectory(directory));
+            if (directory.LinkTarget is not null)
+            {
+                throw new InvalidOperationException($"Output must not traverse symbolic link '{directory.FullName}'.");
+            }
+        }
+        if (Directory.Exists(output)) ValidateTree(new DirectoryInfo(output));
+    }
+
+    private static void ValidateTree(DirectoryInfo directory)
+    {
+        foreach (var entry in directory.EnumerateFileSystemInfos())
+        {
+            if (entry.LinkTarget is not null || entry.Name == ".git")
+            {
+                throw new InvalidOperationException($"Output contains a protected entry: {entry.FullName}");
+            }
+            if (entry is DirectoryInfo child) ValidateTree(child);
+        }
+    }
+
+    private void Publish(string staging)
+    {
+        Directory.CreateDirectory(options.OutputRoot);
+        var paths = Directory.EnumerateFiles(staging, "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(staging, path))
+            .ToHashSet(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
+        // Assets precede HTML so a local refresh never references an uninstalled bundle.
+        foreach (var relative in paths.OrderBy(path => Path.GetExtension(path) == ".html"))
+        {
+            var source = Path.Combine(staging, relative);
+            var destination = Path.Combine(options.OutputRoot, relative);
+            if (File.Exists(destination) && new FileInfo(source).Length == new FileInfo(destination).Length
+                && File.ReadAllBytes(source).AsSpan().SequenceEqual(File.ReadAllBytes(destination)))
+            {
+                continue;
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            Retry(() =>
+            {
+                if (File.Exists(destination)) ClearReadOnly(new FileInfo(destination));
+                File.Copy(source, destination, overwrite: true);
+            });
+        }
+        foreach (var file in Directory.EnumerateFiles(options.OutputRoot, "*", SearchOption.AllDirectories))
+        {
+            if (!paths.Contains(Path.GetRelativePath(options.OutputRoot, file)))
+            {
+                Retry(() => DeleteFile(new FileInfo(file)));
+            }
+        }
+        foreach (var directory in Directory.EnumerateDirectories(options.OutputRoot, "*", SearchOption.AllDirectories)
+                     .OrderByDescending(path => path.Length))
+        {
+            if (!Directory.EnumerateFileSystemEntries(directory).Any())
+            {
+                Retry(() => DeleteDirectory(new DirectoryInfo(directory)));
+            }
         }
     }
 
@@ -187,10 +310,10 @@ internal sealed class SiteBuilder(BuildOptions options)
         return WriteFile(relative, html);
     }
 
-    private string WriteNotFound(PortfolioContent content, DocumentTemplate template)
+    private string WriteNotFound(PortfolioContent content, DocumentTemplate template, string personJsonLd)
     {
         var body = new StringBuilder()
-            .Append("<main id=\"main\" class=\"main\"><div class=\"shell notfound\">")
+            .Append("<main id=\"main\" class=\"main\" tabindex=\"-1\"><div class=\"shell notfound\">")
             .Append("<p class=\"page-head__eyebrow\">404</p>")
             .Append("<h1 class=\"page-head__title\">This page does not exist</h1>")
             .Append("<p class=\"page-head__lead\">The link may be out of date, or the page may have moved.</p>")
@@ -204,7 +327,7 @@ internal sealed class SiteBuilder(BuildOptions options)
             Description = "The requested page could not be found.",
             CanonicalUrl = DocumentTemplate.Combine(content.Site.BaseUrl, "/404.html"),
             BodyHtml = body,
-            StructuredData = BuildPersonJsonLd(content.Site),
+            StructuredData = personJsonLd,
             NoIndex = true,
         });
 
@@ -220,7 +343,7 @@ internal sealed class SiteBuilder(BuildOptions options)
                 asset.OutputPath.Replace('/', Path.DirectorySeparatorChar));
 
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            File.Copy(asset.SourcePath, destination, overwrite: true);
+            CopyNew(asset.SourcePath, destination);
         }
     }
 
@@ -237,23 +360,26 @@ internal sealed class SiteBuilder(BuildOptions options)
             var relative = Path.GetRelativePath(source, file);
             var destination = Path.Combine(options.OutputRoot, relative);
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            File.Copy(file, destination, overwrite: true);
+            CopyNew(file, destination);
         }
+    }
+
+    private static void CopyNew(string source, string destination)
+    {
+        if (File.Exists(destination))
+        {
+            throw new ContentException(source, $"Output collision at '{destination}'.");
+        }
+        File.Copy(source, destination);
     }
 
     private string WriteSitemap(string baseUrl, IEnumerable<string> routes)
     {
-        var builder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        builder.Append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
-
-        foreach (var route in routes)
-        {
-            var url = DocumentTemplate.Combine(baseUrl, route);
-            builder.Append(CultureInfo.InvariantCulture, $"  <url><loc>{url}</loc></url>\n");
-        }
-
-        builder.Append("</urlset>\n");
-        return WriteFile("sitemap.xml", builder.ToString());
+        XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+        var document = new XDocument(new XElement(ns + "urlset",
+            routes.Select(route => new XElement(ns + "url",
+                new XElement(ns + "loc", DocumentTemplate.Combine(baseUrl, route))))));
+        return WriteFile("sitemap.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + document + "\n");
     }
 
     private string WriteRobots(string baseUrl) => WriteFile(
@@ -263,6 +389,10 @@ internal sealed class SiteBuilder(BuildOptions options)
     private string WriteFile(string relativePath, string contents)
     {
         var full = Path.Combine(options.OutputRoot, relativePath);
+        if (File.Exists(full))
+        {
+            throw new ContentException(relativePath, "More than one input produces this output file.");
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         File.WriteAllText(full, contents, Utf8NoBom);
         return relativePath.Replace('\\', '/');
@@ -272,26 +402,15 @@ internal sealed class SiteBuilder(BuildOptions options)
         Directory.EnumerateFiles(options.OutputRoot, "*", SearchOption.AllDirectories)
             .Sum(f => new FileInfo(f).Length);
 
-    private static string BuildPersonJsonLd(SiteConfig site) => JsonSerializer.Serialize(new
+    private static string BuildPersonJsonLd(SiteConfig site) => JsonSerializer.Serialize(new Dictionary<string, object>
     {
-        context = "https://schema.org",
-        type = "Person",
-        name = site.Name,
-        jobTitle = site.Title,
-        url = site.BaseUrl,
-        sameAs = site.Social.Select(s => s.Url).ToArray(),
-    },
-    GeneratorJson.Options)
-        .Replace("\"context\"", "\"@context\"", StringComparison.Ordinal)
-        .Replace("\"type\"", "\"@type\"", StringComparison.Ordinal);
-}
-
-internal static class GeneratorJson
-{
-    public static readonly JsonSerializerOptions Options = new()
-    {
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-    };
+        ["@context"] = "https://schema.org",
+        ["@type"] = "Person",
+        ["name"] = site.Name,
+        ["jobTitle"] = site.Title,
+        ["url"] = site.BaseUrl,
+        ["sameAs"] = site.Social.Select(s => s.Url).ToArray(),
+    });
 }
 
 internal sealed record BuildOptions

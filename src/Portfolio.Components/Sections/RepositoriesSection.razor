@@ -1,0 +1,37 @@
+<ContentSection Key="repositories">
+    <ul class="repositories">
+        @foreach (var repository in Content.Repositories)
+        {
+            <li class="repository reveal" id="repository-@repository.Slug" tabindex="-1">
+                <article class="repository__body">
+                    <div class="repository__meta">
+                        @if (!string.IsNullOrWhiteSpace(repository.Language))
+                        {
+                            <span>@repository.Language</span>
+                        }
+                        @if (repository.Fork)
+                        {
+                            <span class="repository__fork">Fork</span>
+                        }
+                    </div>
+                    <h3 class="repository__title">
+                        <a href="@repository.Links[0].Url" rel="noopener noreferrer" target="_blank">
+                            @repository.Title
+                            <IconGlyph Name="arrow-out" />
+                            <span class="visually-hidden">(opens in a new tab)</span>
+                        </a>
+                    </h3>
+                    @if (!string.IsNullOrWhiteSpace(repository.Summary))
+                    {
+                        <p class="repository__summary">@repository.Summary</p>
+                    }
+                </article>
+            </li>
+        }
+    </ul>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

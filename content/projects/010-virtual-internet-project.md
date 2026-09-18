@@ -1,16 +1,17 @@
 ---
 title: Virtual Internet Project
 featured: true
+visual: network
+category: Networks
 summary: >-
-  Implementation of SEED emulator to create a lab environment for the purpose of
-  Cybersecurity education. The program provides a contained environment that simulates
-  a network of a given size and packets within it.
+  A cybersecurity lab built with SEED emulator to simulate networks and
+  packet traffic in a contained environment.
 tags:
   - Python
   - Cybersecurity
   - Networks
 links:
-  - label: Write-up
+  - label: Read the write-up
     url: https://blog.alexsitzman.com/blogs/virtual-internet-emulation-for-cybersecurity-training
     icon: article
 ---

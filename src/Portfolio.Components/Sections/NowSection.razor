@@ -1,6 +1,6 @@
 @* Current focus, grouped by the heading each entry declares. *@
 
-<ContentSection Key="now" Title="Current focus">
+<ContentSection Key="now">
     @foreach (var group in Content.NowByGroup)
     {
         <section class="now__group">
@@ -8,7 +8,7 @@
             <ul class="cards cards--now">
                 @foreach (var item in group)
                 {
-                    <li class="card reveal">
+                    <li class="card reveal" id="now-@item.Slug" tabindex="-1">
                         <article class="card__body">
                             <h4 class="card__title card__title--sm">@item.Title</h4>
                             @if (!string.IsNullOrWhiteSpace(item.Status))

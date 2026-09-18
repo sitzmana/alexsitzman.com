@@ -1,0 +1,27 @@
+@if (Content.Site.PageNavigation is { } copy && Headings.Count >= 3)
+{
+    <div class="shell page-contents">
+        <nav class="page-contents__panel" aria-labelledby="page-contents-title">
+            <p class="page-contents__title" id="page-contents-title">@copy.ContentsLabel</p>
+            <ul class="page-contents__list">
+                @foreach (var heading in Headings)
+                {
+                    <li>
+                        <a class="page-contents__link" href="@($"#{heading.Id}")" data-page-jump>
+                            <span>@heading.Title</span>
+                            <IconGlyph Name="arrow-down" />
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<ContentHeading> Headings { get; set; }
+}

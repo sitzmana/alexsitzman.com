@@ -1,3 +1,3 @@
 ---
-title: I rowed for 7 years in high school and college.
+title: I rowed for seven years in high school and college.
 ---

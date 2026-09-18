@@ -30,18 +30,17 @@ internal sealed class DocumentTemplate(SiteConfig site, AssetManifest assets)
             builder.Append("<meta name=\"robots\" content=\"noindex\">\n");
         }
 
-        builder.Append("<meta name=\"color-scheme\" content=\"dark light\">\n");
-        builder.Append("<meta name=\"theme-color\" content=\"#0a0e16\">\n");
+        builder.Append("<meta name=\"color-scheme\" content=\"dark\">\n");
+        builder.Append(CultureInfo.InvariantCulture, $"<meta name=\"theme-color\" content=\"{Escape(assets.ThemeColor)}\">\n");
 
         AppendOpenGraph(builder, model);
 
-        // Flip the no-js class before first paint so reveal animations never
-        // leave content hidden when scripting is unavailable or still loading.
+        // This class alone never hides content; the loaded enhancement opts in per element.
         builder.Append("<script>document.documentElement.classList.replace('no-js','js')</script>\n");
 
         builder.Append(CultureInfo.InvariantCulture, $"<link rel=\"stylesheet\" href=\"{assets.StylesheetPath}\">\n");
         builder.Append("<link rel=\"icon\" href=\"/favicon.svg\" type=\"image/svg+xml\">\n");
-        builder.Append(CultureInfo.InvariantCulture, $"<link rel=\"alternate\" type=\"application/rss+xml\" title=\"{Escape(site.Name)}\" href=\"/sitemap.xml\">\n");
+        builder.Append("<link rel=\"sitemap\" type=\"application/xml\" href=\"/sitemap.xml\">\n");
         builder.Append(CultureInfo.InvariantCulture, $"<script type=\"application/ld+json\">{model.StructuredData}</script>\n");
         builder.Append("</head>\n<body>\n");
 

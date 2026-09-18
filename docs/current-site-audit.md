@@ -3,6 +3,11 @@
 Read-only audit of `alexsitzman.com` as it existed before this rebuild, captured via the
 public pages. No authentication was bypassed and no rate limits were exceeded.
 
+**September 17, 2026 correction:** revisiting the rendered About page showed
+working repositories, contributions, and twelve Spotify-linked tracks. The first
+pass's loading/empty state was not proof that those features were permanently
+broken. They have now been restored as dated file-backed snapshots.
+
 ## Stack
 
 React single-page application, client-side routed, Poppins webfont, deployed on Vercel.
@@ -59,12 +64,12 @@ All of the above was carried over. Mapping in [content-inventory.md](content-inv
 
 1. The header wordmark linked to `https://www.alexstzman.com` — a typo, missing the `i`.
    Dead link on every page.
-2. "Latest Repositories" on `/about` showed "Loading repositories..." permanently. The
-   fetch never resolved.
-3. The Spotify "What I'm Listening To" panel rendered as two unlabelled buttons with no
-   content between them.
-4. One "Did you know" line referred to the Spotify panel, so it described a feature that
-   did not work.
+2. "Latest Repositories" showed a loading placeholder in the initial capture;
+   the rendered revisit confirmed five repositories.
+3. The Spotify panel was empty in the initial capture; the rendered revisit
+   confirmed twelve tracks with artists and links.
+4. One fact refers to live Spotify API updates. That claim does not apply to
+   this rebuild's static snapshot and is not carried over.
 
 **Inconsistency**
 
@@ -100,7 +105,7 @@ All of the above was carried over. Mapping in [content-inventory.md](content-inv
 | Weakness | Resolution |
 | --- | --- |
 | 1 | Wordmark links to `/` |
-| 2, 3, 4 | Not rebuilt; both need a runtime API. Recorded in [content-review-needed.md](content-review-needed.md) |
+| 2, 3, 4 | Repositories, activity, and music restored as dated local content; no live-API claim |
 | 5 | Profile links use `sitzmana`; the DAS Driver URL is preserved exactly and flagged |
 | 6 | Three interests, once each, in a responsive grid |
 | 7 | Static HTML. Full content without JavaScript |

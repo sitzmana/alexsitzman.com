@@ -1,7 +1,9 @@
 # Release readiness
 
-Status as of the current commit. Every claim below is backed by a command that was run and
-whose output is quoted. Anything unverified is listed as unverified.
+Historical evidence from the initial implementation, retained for context. It is not
+the validation record for the spatial-design revision. Current behavior and evidence
+are in `testing.md`, `performance.md`, and `accessibility.md`. The revision has not
+been deployed; hosted headers and routing still need post-deployment verification.
 
 ## Verdict
 
@@ -118,7 +120,7 @@ with the reasoning in [decisions.md](decisions.md).
 | --- | --- | --- |
 | 1 | Create the Static Web App, set `AZURE_STATIC_WEB_APPS_API_TOKEN` | Creates an Azure resource; needs authorisation |
 | 2 | Confirm `sitzmaa` vs `sitzmana` for the DAS Driver repository | Both appear on the old site; guessing would break a link |
-| 3 | Decide on the Spotify and GitHub-repositories panels | Both were non-functional; rebuilding needs a product decision |
+| 3 | Keep the restored music and GitHub snapshots current | Resolved by the September 17 revision; editing content, not a live API |
 | 4 | Add `role`, `period`, and body prose to projects | Inventing engineering detail is not acceptable |
 | 5 | Confirm title, location, email, and current focus are still accurate | Only you know |
 | 6 | Add certification verification links | Credential URLs are not public on the old site |

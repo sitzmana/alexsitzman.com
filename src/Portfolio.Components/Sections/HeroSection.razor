@@ -1,6 +1,3 @@
-@* Opening statement. Not wrapped in ContentSection: it carries the page's h1
-   and needs a full-bleed backdrop rather than the standard section frame. *@
-
 <section class="hero" id="hero" data-section="hero">
     <div class="hero__field" aria-hidden="true">
         <div class="hero__grid"></div>
@@ -8,57 +5,98 @@
     </div>
 
     <div class="shell hero__shell">
-        <p class="hero__eyebrow reveal">
-            <IconGlyph Name="node" />
-            <span>@Site.Title</span>
-        </p>
-
-        <h1 class="hero__title reveal">
-            <span class="hero__greeting">@Greeting,</span>
-            <span class="hero__name">I am @Site.Name.</span>
-        </h1>
-
-        @if (!string.IsNullOrWhiteSpace(Site.Location))
-        {
-            <p class="hero__meta reveal">
-                <span class="hero__pin" aria-hidden="true"></span>
-                @Site.Location
+        <div class="hero__copy">
+            <p class="hero__eyebrow">
+                <IconGlyph Name="node" />
+                <span>@Site.Title</span>
             </p>
-        }
 
-        @if (Site.Social.Length > 0)
-        {
-            <ul class="hero__social reveal" aria-label="Profiles">
-                @foreach (var link in Site.Social)
+            <h1 class="hero__title">
+                @if (!string.IsNullOrWhiteSpace(Site.Hero.Greeting))
                 {
-                    <li>
-                        <a class="chip" href="@link.Url" rel="me noopener noreferrer" target="_blank">
-                            <span>@link.Label</span>
-                            <IconGlyph Name="arrow-out" />
-                            <span class="visually-hidden">(opens in a new tab)</span>
-                        </a>
-                    </li>
+                    <span class="hero__greeting">@Site.Hero.Greeting</span>
                 }
-            </ul>
+                <span class="hero__name">@Site.Name.</span>
+            </h1>
+
+            @if (!string.IsNullOrWhiteSpace(Site.Hero.Summary))
+            {
+                <p class="hero__summary">@Site.Hero.Summary</p>
+            }
+
+            @if (Site.Hero.Links.Length > 0)
+            {
+                <div class="hero__actions">
+                    @foreach (var (link, index) in Site.Hero.Links.Select((link, index) => (link, index)))
+                    {
+                        <a class="button @(index == 0 ? "button--primary" : "button--secondary")" href="@link.Url">
+                            <span>@link.Label</span>
+                            <IconGlyph Name="arrow-right" />
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (Content.ProjectListingRoute is { } listing && Content.FeaturedProjects.Any())
+        {
+            <nav class="project-index" aria-label="Explore selected projects">
+                <p class="project-index__label">@Site.Hero.SceneLabel</p>
+                <ol class="project-deck">
+                    @foreach (var (project, index) in Content.FeaturedProjects.Select((item, index) => (item, index + 1)))
+                    {
+                        <li class="project-deck__item">
+                            <a class="project-deck__card" href="@(listing)#project-@project.Slug" data-project-jump>
+                                <div class="project-deck__surface">
+                                    <span class="project-deck__number">@index.ToString("00", CultureInfo.InvariantCulture)</span>
+                                    <span class="project-deck__copy">
+                                        <span class="project-deck__category">@project.Category</span>
+                                        <span class="project-deck__title">@project.Title</span>
+                                    </span>
+                                    @if (project.Visual is not null)
+                                    {
+                                        <ProjectVisual Motif="@project.Visual" />
+                                    }
+                                    <IconGlyph Name="arrow-down" Class="project-deck__arrow" />
+                                </div>
+                            </a>
+                        </li>
+                    }
+                </ol>
+                <p class="project-index__hint">@Site.Hero.SceneHint</p>
+            </nav>
         }
 
-        <a class="hero__scroll reveal" href="#projects">
-            <span>Selected work</span>
-            <IconGlyph Name="arrow-down" />
-        </a>
+        <div class="hero__foot">
+            @if (!string.IsNullOrWhiteSpace(Site.Location))
+            {
+                <p class="hero__meta">
+                    <span class="hero__pin" aria-hidden="true"></span>
+                    @Site.Location
+                </p>
+            }
+            @if (Site.Social.Length > 0)
+            {
+                <ul class="hero__social" aria-label="Profiles">
+                    @foreach (var link in Site.Social)
+                    {
+                        <li>
+                            <a class="chip" href="@link.Url" rel="me noopener noreferrer" target="_blank">
+                                <span>@link.Label</span>
+                                <IconGlyph Name="arrow-out" />
+                                <span class="visually-hidden">(opens in a new tab)</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
     </div>
 </section>
 
 @code {
     [CascadingParameter]
     public required PortfolioContent Content { get; set; }
-
-    /// <summary>
-    /// Baked in at build time rather than read from the visitor's clock: a static page
-    /// cannot know the reader's local hour, and a wrong greeting reads worse than none.
-    /// </summary>
-    [Parameter]
-    public string Greeting { get; set; } = "Hello";
 
     private SiteConfig Site => Content.Site;
 }

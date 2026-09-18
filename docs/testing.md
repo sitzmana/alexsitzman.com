@@ -1,120 +1,113 @@
 # Testing
 
+## .NET regression suite
+
 ```pwsh
 dotnet test Portfolio.slnx
+dotnet build Portfolio.slnx -c Release
+dotnet run --project src\Portfolio.Generator -c Release --no-build -- --output dist
 ```
 
-**54 tests, all passing.** Runtime ~370 ms.
+**143 tests** passed for the September 18, 2026 revision. Coverage includes:
 
-## What is covered
+- Front-matter fences, slugs, ordering, drafts, and real repository content.
+- Unknown and duplicate YAML keys, invalid origins/links, and unsupported artwork.
+- Duplicate home routes and repeated sections.
+- File-driven navigation, hero copy, section copy, and project routes.
+- Project index links following project additions, removals, drafts, and page routes.
+- Repository forks and listening entries, including required artists and control labels.
+- Contribution date ranges, duplicate/invalid days, inclusive leap years, maximum dates,
+  and totals larger than a 32-bit integer.
+- Evidence destinations across renamed source pages, draft exclusion, real topic
+  deduplication, missing source routes, and file-driven credential highlights.
+- Required Explorer copy, invalid topics, and adding a file updating both results
+  and topic options without editing templates.
+- File-derived contents, section ordering, source-backed labels, short-page
+  omission, hero placement, and project outlines updating with Markdown edits.
+- Scoped heading anchors, duplicate headings, overlapping slug/heading names,
+  Unicode fragments, inline formatting, empty headings, and native focus targets.
+- Body content surviving a hidden page heading or a hero section.
+- Folder assets following page routes, including `/`, and shared collection URLs.
+- Output/source overlap rejection and generated-file collision detection.
+- Preservation of the last good build on content/rendering failure.
+- Unchanged-file timestamps and case-only destination filename changes.
+- Safe JSON-LD escaping, theme metadata, sitemap metadata, and real 404 configuration.
+- Watcher events arriving during a build producing a coalesced follow-up build.
 
-| Suite | Tests | Covers |
-| --- | --- | --- |
-| `FrontMatterTests` | 5 | Fence parsing, BOM handling, missing and unterminated front matter |
-| `SlugTests` | 10 | File name → URL slug, sort-prefix extraction |
-| `ContentLoaderTests` | 17 | Ordering, drafts, typed binding, asset collection, every failure mode |
-| `RealContentTests` | 9 | The actual `content/` tree |
-| `SiteBuilderTests` | 13 | End to end: content files in, HTML out |
+The solution needs no Python or Node.js to build, test its .NET code, or generate.
 
-## The three layers
+## Browser regressions
 
-### 1. Unit — parsing rules
-
-`FrontMatterTests` and `SlugTests` pin the rules a content author relies on:
-`020-hiking.md` sorts at 20 and slugs to `hiking`; a UTF-8 BOM does not hide the opening
-fence; front matter opened and never closed is an error rather than a file silently
-treated as prose.
-
-### 2. Loader — behaviour against temporary trees
-
-`ContentLoaderTests` builds throwaway content folders and asserts on the result. Half the
-suite is failure behaviour, because silent failure is the main risk of a file-driven site:
-
-- `A_misspelled_front_matter_key_fails_the_build` — `featuerd: true` is an error, not a
-  shrug that leaves the project off the home page
-- `A_missing_title_fails_with_the_file_name`
-- `Colliding_slugs_fail_rather_than_overwrite`
-- `Unterminated_front_matter_names_the_offending_file`
-- `A_content_tree_without_a_home_page_fails`
-- `Raw_html_in_content_is_not_passed_through`
-
-### 3. End to end — the real generator
-
-`SiteBuilderTests` runs `SiteBuilder` against temporary content and asserts on the HTML on
-disk. These are the tests that back the "add a file, get content" promise:
-
-- `Adding_a_page_file_creates_a_route_and_a_nav_entry` — and checks the nav updated on
-  *other* pages too, not just the new one
-- `A_project_with_a_body_also_gets_its_own_page`
-- `A_project_without_a_body_gets_no_page_and_no_link`
-- `Draft_entries_stay_out_of_the_output`
-- `Rebuilding_removes_files_whose_content_was_deleted`
-- `Images_beside_a_content_file_are_copied_next_to_its_page`
-- `An_unknown_section_key_fails_the_build_and_lists_the_valid_ones`
-- `Every_page_carries_the_accessibility_and_metadata_scaffolding` — `lang`, skip link,
-  `#main`, canonical, Open Graph, JSON-LD
-- `Stylesheet_and_script_are_content_hashed_for_immutable_caching`
-
-### The regression guard on real content
-
-`RealContentTests` loads the repository's actual `content/` folder at class-init. If any
-content file is malformed, **every test in the class fails** with the offending path.
-This is deliberate: it makes CI the safety net for content edits, so a typo in a Markdown
-file is caught in a pull request rather than after deployment.
-
-It also asserts content-level invariants:
-
-- `Every_skill_from_the_previous_site_survived_the_regrouping` — names all twelve skills
-  from the old site and fails if any is dropped during a reorganisation
-- `Every_link_is_absolute_https_or_a_mailto` — no `http://`, no relative outbound links
-- `Every_link_has_a_label` — no icon-only links can be introduced
-- `Every_listed_entry_has_a_summary_or_a_body` — no blank cards
-- `Every_page_section_key_is_known`
-
-## Browser verification
-
-Run manually against a live preview, not in CI. Results are in
-[accessibility.md](accessibility.md) and [performance.md](performance.md).
+Optional local tooling, pinned in `tests/browser/requirements.txt`; required by CI.
+Nothing from this tooling is included in the deployed artifact.
 
 ```pwsh
-dotnet run --project src/Portfolio.Generator -- --serve --port 5173
+python -m pip install -r tests\browser\requirements.txt
+python -m playwright install chromium
+python tests\browser\check_site.py
 ```
 
-| Check | Method | Result |
-| --- | --- | --- |
-| Horizontal overflow | `scrollWidth - clientWidth` at 320/375/390/768/1024/1440/1920 px × 3 routes | 0 everywhere |
-| Colour contrast | Computed foreground vs. resolved background, all text nodes | 0 violations |
-| Target size | Bounding box of every `a`/`button` at 390 px | 0 under 24×24 |
-| Reduced motion | `emulateMedia({ reducedMotion: 'reduce' })` | 0/18 hidden, progress bar off |
-| No JavaScript | Browser context with `javaScriptEnabled: false` | 0/18 hidden, 2,036 chars of text |
-| Keyboard focus | Eight `Tab` presses, checking `outlineStyle`/`outlineWidth` | Logical order, all visible |
-| File-driven routing | Added `content/pages/040-uses.md` with the watcher running | `/uses/` served, nav updated sitewide, no restart |
+The script starts a Release preview on an available local port and stops its own
+process afterward. Build Release first. To use an installed Edge browser:
 
-## CI
+```pwsh
+python tests\browser\check_site.py --browser-channel msedge
+```
 
-[.github/workflows/ci.yml](../.github/workflows/ci.yml) runs on every push and pull
-request:
+An existing preview can be supplied with `--base-url http://localhost:5000`.
+Use `--screenshots <directory>` to save local screenshots.
 
-1. `dotnet restore --locked-mode` — fails if `packages.lock.json` does not match
-2. `dotnet build -c Release`
-3. `dotnet test -c Release`
-4. Generate the site
-5. Assert each expected output file exists and is non-empty
-6. Enforce the 150 KB home-page payload budget
+| Coverage | Assertions |
+| --- | --- |
+| 320, 375, 768, 1024, 1440 px across every sitemap route | No horizontal overflow, one h1, unique IDs, labelled controls |
+| Reduced motion | All content visible; progress hidden |
+| JS disabled, script blocked, IntersectionObserver absent | Content remains visible at 320 and 1440 px |
+| Forced colors | Content visible, opaque hero text |
+| Keyboard | Skip link focuses main; Enter on project index focuses the corresponding project |
+| Reading navigation at 320 and 1440 px | Touch/keyboard contents links focus real destinations; Back/Forward restore sections; direct fragments and return-to-top work with scripts disabled/blocked and in forced colors |
+| Reading navigation fallbacks | 44 px targets, immediately visible destinations, authored labels, no contents controls in print, article headings retained |
+| Touch | No pointer tilt; project links work; record controls and native swiping scroll the shelf |
+| Project geometry | Pointer transforms the actual project surface and resets on exit |
+| Hero hover at 768, 959, 1024, 1440 px, with and without JS | Stationary link bounds throughout transitions; surfaces remain contained; all eight edge/corner points retain the same link; edge clicks navigate correctly |
+| Record shelf | Start/end button state, native fallback scrolling, one copy of each record |
+| Live preference changes | Tilt reset, content revealed, transitions disabled |
+| Idle interactions | No continuously scheduled animation frames or autoplay |
+| Initial enhancement | Layout shift below 0.01 |
+| Hosting CSP | Interaction checks run with configured global headers |
+| Growing content | Additional navigation items and long tags still fit 320 px |
+| Routing | Real local HTTP 404 for unknown routes |
+| Networking | No third-party requests in the responsive route sweep |
+| Explorer at 320x568, 375x812, and 1440x960 | Keyword/topic/type filtering, touch controls, shareable URLs, Back/Forward, reset and empty states |
+| Explorer failure modes | Invalid URL filters explained; clipboard denial offers manual copy; blocked history updates do not break search |
+| Explorer safety and navigation | Search strings remain text; hosting CSP enforced; real destination anchors; all entries retained in print and without scripts |
 
-Warnings are errors (`TreatWarningsAsErrors`), so a build warning fails CI.
+Screenshots were visually inspected at 320 and 1440 px, including the project
+depth state and restored About content. The suite also checks print visibility
+and that the entire record collection fits the printed page.
+The September 18 run covers six routes: 30 responsive checks, 48 fallback checks,
+24 stationary-hover checks, and 24 reading-navigation scenarios under the hosting
+headers, with no browser errors or third-party requests.
+The responsive/fallback route list comes from the generated sitemap, so new page
+files receive the same coverage automatically.
 
-## Gaps
+The hover regression reproduced the previous moving-target failure before the
+fix. Sampling is driven from Playwright, not page timers, so the no-JavaScript
+case tests real disabled-script behavior without hanging on suppressed callbacks.
 
-Stated rather than implied.
+## CI and deployment
 
-- **No component-level tests.** No bUnit. Components are covered indirectly through the
-  end-to-end HTML assertions, which is thinner than testing render logic directly.
-- **Browser checks are not automated.** They were run manually and recorded above. They do
-  not run in CI, so a regression in contrast or overflow would not fail a pull request.
-- **No visual regression baseline.** No screenshot comparison exists.
-- **Chromium only.** No Firefox or WebKit run.
-- **External links are not reachability-checked.** Tests assert the *shape* of a URL
-  (`https://`, has a label), not that it returns 200. A link-checking job would need
-  network access in CI and would be flaky against rate-limited hosts.
-- **No alt-text enforcement** on author-supplied Markdown images.
+`deploy.yml` handles pushes and pull requests, calls reusable `ci.yml`, and only
+deploys the resulting artifact if validation succeeds. CI can also be run manually.
+This avoids two independent build pipelines for the same change.
+
+The shared pipeline scans for credentials, restores locked packages, builds
+Release, runs .NET tests, generates the site, enforces the exact byte budget,
+and runs Chromium browser regressions. Browser tests do not receive deployment
+secrets. Workflows were checked locally with actionlint.
+
+## Remaining limits
+
+No screenshot-diff baseline, screen-reader session, axe-core/Lighthouse audit,
+Firefox/WebKit coverage, physical-device testing, or external-link reachability
+test is claimed. Markdown alt text is still the author's responsibility.
+Actual cloud cache headers and 404 behavior require post-deployment verification.

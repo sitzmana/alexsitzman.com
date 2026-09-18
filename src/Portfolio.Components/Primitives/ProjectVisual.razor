@@ -1,0 +1,42 @@
+<div class="project-visual project-visual--@Motif" aria-hidden="true">
+    <svg viewBox="0 0 480 240" fill="none" focusable="false">
+        @switch (Motif)
+        {
+            case "network":
+                <g class="project-visual__lines" stroke="currentColor" stroke-width="1">
+                    <path d="m70 65 120-30 100 35 115-25M70 65l35 120 120 20 90-45 90-115M190 35l35 170M290 70l-185 115m-35-120 245 95M190 35l125 125m-25-90 115 90" />
+                    <circle cx="225" cy="120" r="75" stroke-dasharray="3 9" />
+                    <circle cx="225" cy="120" r="105" stroke-dasharray="2 12" />
+                </g>
+                <g class="project-visual__nodes" stroke="currentColor" stroke-width="2">
+                    <circle cx="70" cy="65" r="9" /><circle cx="190" cy="35" r="6" />
+                    <circle cx="290" cy="70" r="11" /><circle cx="405" cy="45" r="6" />
+                    <circle cx="105" cy="185" r="7" /><circle cx="225" cy="205" r="9" />
+                    <circle cx="315" cy="160" r="13" /><circle cx="405" cy="160" r="5" />
+                </g>
+                break;
+            case "stack":
+                <g class="project-visual__lines" stroke="currentColor" stroke-width="1">
+                    <path d="m100 145 140-65 140 65-140 65Zm0-35 140-65 140 65-140 65Zm0-35 140-65 140 65-140 65Z" />
+                    <path d="M100 75v70m140-5v70m140-135v70M170 43l140 65m-140 65 140-65" stroke-dasharray="3 5" />
+                </g>
+                <path class="project-visual__nodes" d="m208 75 32-15 32 15-32 15Z" stroke="currentColor" stroke-width="2" />
+                <g stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                    <path d="m270 144 9-4m9-5 9-4m-27 48 9-4m9-5 9-4" />
+                </g>
+                break;
+            case "signal":
+                <g class="project-visual__lines" stroke="currentColor" stroke-width="1">
+                    <path d="M40 60h400M40 120h400M40 180h400M80 35v170m80-170v170m80-170v170m80-170v170m80-170v170" />
+                    <path d="M40 120h55v-40h60v80h60V60h60v120h60v-60h105" />
+                </g>
+                <path d="M40 120h40c20 0 20-60 40-60s20 120 40 120 20-120 40-120 20 120 40 120 20-120 40-120 20 120 40 120 20-60 40-60h80" stroke="currentColor" stroke-width="2" />
+                break;
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Motif { get; set; }
+}

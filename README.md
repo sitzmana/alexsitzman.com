@@ -36,7 +36,9 @@ Blazor WebAssembly was the starting assumption and was rejected. For a content s
 with no interactive application state, it costs a multi-megabyte runtime download, a
 blank frame before first paint, and a dependency on JavaScript for the page to exist
 at all. Static generation keeps the authoring model — C#, Razor, strong typing — and
-removes all three costs. The whole site is under 70 KB uncompressed.
+removes all three costs. The project index, depth-enabled cards, record shelf, and
+evidence explorer add no client framework: the home page is 92.8 KiB uncompressed,
+or 17.5 KiB with local gzip.
 
 Full reasoning and the rejected alternatives are in [docs/decisions.md](docs/decisions.md).
 
@@ -47,7 +49,9 @@ Full reasoning and the rejected alternatives are in [docs/decisions.md](docs/dec
 - [.NET SDK 10.0.400](https://dotnet.microsoft.com/download) or a later 10.0.4xx feature band
   (pinned in [global.json](global.json))
 
-Nothing else. No Node.js, no npm, no CSS toolchain.
+Nothing else is needed to build or generate. Browser regression checks use optional
+Python/Playwright tooling described in [docs/testing.md](docs/testing.md). There is
+no Node.js, npm, or CSS toolchain requirement.
 
 ---
 
@@ -68,7 +72,8 @@ dotnet run --project src/Portfolio.Generator -- --help
 ```
 
 `--serve` watches `content/`, `assets/`, and `static/`. Saving a Markdown file rebuilds
-the site in roughly 200 ms; refresh the browser to see it.
+the site; refresh the browser to see it. Bursts are coalesced, changes during a build
+are retained, and content errors leave the last good preview intact.
 
 ---
 
@@ -78,8 +83,8 @@ the site in roughly 200 ms; refresh the browser to see it.
 dotnet test Portfolio.slnx
 ```
 
-The suite covers front-matter parsing, slug rules, ordering, draft handling, and a set of
-end-to-end tests that run the real generator and assert on the produced HTML.
+The 143-test suite covers front-matter parsing, slug rules, ordering, drafts, output
+safety, preview rebuild behavior, metadata, and end-to-end generated HTML.
 
 `RealContentTests` loads the actual `content/` folder, so a malformed or mis-keyed content
 file fails the test suite with the offending file path rather than silently vanishing from
@@ -109,10 +114,17 @@ short version:
 | To do this | Do that |
 | --- | --- |
 | Change your title, location, email, or profile links | Edit `content/site.yml` |
+| Change hero copy, section headings, or calls to action | Edit `hero` and `sections` in `content/site.yml` |
+| Select project artwork | Set `visual: network`, `stack`, or `signal` in the project file |
 | Add a project | Add `content/projects/040-name.md` |
 | Add a certification | Add `content/certifications/030-name.md` |
+| Feature a credential on Home | Set `featured: true` in its certification file |
+| Change Explorer labels or state messages | Edit `explorer` in `content/site.yml` |
+| Change reading-navigation labels | Edit `pageNavigation` in `content/site.yml` |
 | Update what you're working on | Edit or add a file in `content/now/` |
 | Add a skill | Add one line to a file in `content/skills/` |
+| Add a record to the music shelf | Add a file in `content/listening/` with artist and labelled link |
+| Update the repository/activity snapshots | Edit `content/repositories/` or `content/activity/`, and their dated section notes |
 | Add a whole new page | Add `content/pages/040-name.md` |
 | Reorder anything | Change the numeric filename prefix, or set `order:` |
 | Hide something temporarily | Set `draft: true` |
@@ -122,12 +134,30 @@ A numeric prefix (`020-`) sets sort position and is stripped from the URL. Front
 
 Mistakes fail the build with the file name and line number. They never fail silently.
 
+## Exploring the portfolio
+
+`/explore/` connects declared topics to projects, credentials, repositories, and
+work in progress. Search, topic selection, and evidence-type filters work together;
+their state is bookmarkable and shareable. Clipboard denial offers a manual-copy
+link. Filtering runs locally, without an API, search service, or analytics.
+
+The catalog is generated from existing content files, not maintained separately.
+Linked skills on Home open the matching Explorer topic. `/credentials/` contains
+the full credential collection; a smaller featured panel keeps Home focused.
+All six pages and the complete catalog remain readable with scripts disabled.
+
+`/site/` explains the actual static pipeline, browser payload, and design tradeoffs.
+Long pages get **On this page** navigation derived from their Markdown h2 headings
+and declared sections; project detail pages reuse the same behavior. Native anchors
+move keyboard focus, and a footer link returns to the top without requiring scripts.
+
 ---
 
 ## Deployment
 
-Push to `main`. [.github/workflows/deploy.yml](.github/workflows/deploy.yml) restores,
-builds, tests, generates, and only then deploys to Azure Static Web Apps. Pull requests
+Push to `main`. [.github/workflows/deploy.yml](.github/workflows/deploy.yml) calls the
+shared CI workflow to build, test, generate, enforce the byte budget, and check browser
+behavior before deploying to Azure Static Web Apps. Pull requests
 get a preview environment that is torn down when the PR closes.
 
 **Azure resources required:** one Static Web App (Free tier is sufficient). No database,
@@ -162,10 +192,10 @@ Setup, custom-domain migration, and rollback are in [docs/deployment.md](docs/de
   shipping two mediocre ones.
 - **No webfont.** The site uses a system font stack, so typography differs slightly
   between Windows, macOS, and Linux. This buys a zero-byte font payload.
-- **Two features from the previous site were not rebuilt:** the Spotify "what I'm
-  listening to" panel and the live GitHub repository list. Both require a runtime API
-  call; both were non-functional on the previous site. See
-  [docs/content-review-needed.md](docs/content-review-needed.md).
+- **Snapshots, not live integrations.** The original site's twelve Spotify-linked
+  tracks, five public repositories, and GitHub activity were restored from verified
+  September 17, 2026 sources. Updating them means editing content files; there is
+  no runtime API, token store, autoplay, or third-party embed.
 - **No analytics.** Nothing tracks visitors. Adding any is an explicit decision.
 - **Lighthouse has not been run.** Payload sizes are measured and enforced in CI, but no
   Lighthouse score has been produced, and none is claimed.

@@ -17,6 +17,8 @@ artifacts/
 *.swp
 .DS_Store
 Thumbs.db
+__pycache__/
+.venv/
 
 # Local settings that must never be committed
 *.local.json

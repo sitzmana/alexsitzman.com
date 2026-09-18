@@ -10,7 +10,94 @@ description: >-
   Alex Sitzman is a Senior Technical Support Engineer at Microsoft Azure working on
   Kubernetes, containers, Linux, and cloud-native infrastructure.
 
-# Add a line here and the icon appears in the hero and footer.
+hero:
+  greeting: Hello, I'm
+  summary: I work with Kubernetes, containers, Linux, and cloud-native infrastructure.
+  sceneLabel: Take a look at what I've built.
+  sceneHint: Choose a project to read more.
+  links:
+    - label: Explore my work
+      url: /#projects
+    - label: A little about me
+      url: /about/
+
+explorer:
+  searchLabel: Search my work
+  searchPlaceholder: Try Kubernetes, security, Go...
+  topicLabel: Choose a topic
+  allTopicsLabel: All topics
+  kindLabel: Filter by category
+  resetLabel: Clear filters
+  shareLabel: Copy link to this view
+  shareUrlLabel: Link to this view
+  copiedMessage: Link copied.
+  copyFailedMessage: Couldn't copy the link automatically. Copy the selected link below.
+  resultsTemplate: Showing {shown} of {total} results.
+  emptyMessage: Nothing matched those filters. Try a different search or clear the filters.
+  fallbackMessage: You can browse everything below without JavaScript. Enable it to search, filter, or copy a link to your results.
+  readyMessage: Choose a category to narrow the results. Choose it again to show all categories.
+  invalidFilterMessage: One of the filters in this link isn't available. It's been cleared; your other filters still apply.
+  historyFailedMessage: Your filters still work, but the address bar couldn't be updated. Use Copy link to this view to share them.
+  openLabel: View details
+  projectLabel: Projects
+  credentialLabel: Credentials
+  repositoryLabel: Repositories
+  nowLabel: In progress
+
+pageNavigation:
+  contentsLabel: On this page
+  backToTopLabel: Back to top
+
+sections:
+  explorer:
+    title: Browse my work.
+    lead: Looking for Kubernetes, security, or something else? Browse my projects, credentials, repositories, and current work by topic.
+    note: Results use the topics listed for each item. Repositories marked "Fork" are copies of other projects.
+  credential-highlight:
+    label: Credentials
+    title: My certifications.
+    lead: My credentials cover Kubernetes, cloud-native technologies, and Linux.
+    links:
+      - label: View all credentials
+        url: /credentials/
+      - label: Explore related work
+        url: /explore/?topic=Kubernetes
+  projects:
+    title: Built out of curiosity.
+    lead: A few projects I've built to explore networking, Kubernetes, and hardware.
+  activity:
+    title: On GitHub.
+    lead: A look at my public GitHub activity.
+    note: Recorded on September 17, 2026. This isn't a live feed, and it doesn't include all of my work.
+  repositories:
+    title: More on GitHub.
+    lead: A few repositories from my profile, with forks marked.
+    note: Last checked September 17, 2026. This list doesn't update automatically.
+  listening:
+    title: On my playlist.
+    lead: A few tracks from my listening collection.
+    note: Playlist saved September 17, 2026. Tracks open in Spotify, with no autoplay or embedded players.
+    previousLabel: Previous records
+    nextLabel: Next records
+  certifications:
+    title: The full list.
+    lead: My Kubernetes and Linux certifications, along with Kubestronaut recognition.
+  skills:
+    title: Tools I work with.
+    lead: Some topics link to related projects, certifications, and current work.
+  now:
+    title: On the workbench.
+  interests:
+    title: Away from the keyboard.
+  facts:
+    title: A few other things.
+  connect:
+    title: Find me online.
+  contact:
+    title: Get in touch.
+    lead: Have a question about Kubernetes, Azure, or one of my projects? I'd be happy to hear from you.
+
+# Add a line here and the profile link appears in the hero and footer.
 social:
   - label: GitHub
     url: https://github.com/sitzmana

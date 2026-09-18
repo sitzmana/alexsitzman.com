@@ -1,8 +1,6 @@
-@* Site header. The nav stays visible at every width: with three short links a
-   disclosure menu would add a tap, a focus trap, and a JavaScript dependency
-   for no benefit. Revisit if the nav grows past roughly five items. *@
+@* Navigation stays visible and wraps on small screens; no script-dependent menu. *@
 
-<header class="masthead">
+<header class="masthead" id="top" tabindex="-1">
     <div class="shell masthead__shell">
         <a class="wordmark" href="/">
             <span class="wordmark__mark" aria-hidden="true">@Content.Site.Initials</span>

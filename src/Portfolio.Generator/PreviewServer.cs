@@ -19,8 +19,8 @@ internal static class PreviewServer
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
         builder.WebHost.UseUrls($"http://localhost:{port}");
 
-        var app = builder.Build();
-        var files = new PhysicalFileProvider(options.OutputRoot);
+        await using var app = builder.Build();
+        using var files = new PhysicalFileProvider(options.OutputRoot);
 
         app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = files });
         app.UseStaticFiles(new StaticFileOptions
@@ -45,15 +45,15 @@ internal static class PreviewServer
             }
         });
 
-        using var watcher = StartWatching(options);
+        await using var watcher = StartWatching(options);
 
         Console.WriteLine($"Preview: http://localhost:{port}  (Ctrl+C to stop)");
         await app.RunAsync();
     }
 
-    private static IDisposable StartWatching(BuildOptions options)
+    private static IAsyncDisposable StartWatching(BuildOptions options)
     {
-        var debounce = new SemaphoreSlim(1, 1);
+        var queue = new RebuildQueue(token => RebuildAsync(options, token));
         var watchers = new List<FileSystemWatcher>();
 
         foreach (var root in new[] { options.ContentRoot, options.AssetsRoot, options.StaticRoot })
@@ -67,33 +67,31 @@ internal static class PreviewServer
             {
                 IncludeSubdirectories = true,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
-                EnableRaisingEvents = true,
             };
 
-            FileSystemEventHandler handler = async (_, _) => await RebuildAsync(options, debounce);
+            FileSystemEventHandler handler = (_, _) => queue.Request();
             watcher.Changed += handler;
             watcher.Created += handler;
             watcher.Deleted += handler;
-            watcher.Renamed += async (_, _) => await RebuildAsync(options, debounce);
+            watcher.Renamed += (_, _) => queue.Request();
+            watcher.Error += (_, args) =>
+            {
+                Console.Error.WriteLine($"File watcher error: {args.GetException().Message}. Requesting a full rebuild.");
+                queue.Request();
+            };
+            watcher.EnableRaisingEvents = true;
 
             watchers.Add(watcher);
         }
 
-        return new CompositeDisposable(watchers);
+        return new WatchSubscription(watchers, queue);
     }
 
-    private static async Task RebuildAsync(BuildOptions options, SemaphoreSlim gate)
+    private static async Task RebuildAsync(BuildOptions options, CancellationToken token)
     {
-        if (!await gate.WaitAsync(0))
-        {
-            return;
-        }
-
         try
         {
-            // Editors write in several steps; let the burst settle before reading.
-            await Task.Delay(120);
-            await new SiteBuilder(options).BuildAsync();
+            await new SiteBuilder(options).BuildAsync(token);
             Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Rebuilt.");
         }
         catch (ContentException ex)
@@ -104,20 +102,25 @@ internal static class PreviewServer
         {
             Console.Error.WriteLine($"[{DateTime.Now:HH:mm:ss}] {ex.Message}");
         }
-        finally
+        catch (UnauthorizedAccessException ex)
         {
-            gate.Release();
+            Console.Error.WriteLine($"[{DateTime.Now:HH:mm:ss}] {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.Error.WriteLine($"[{DateTime.Now:HH:mm:ss}] {ex.Message}");
         }
     }
 
-    private sealed class CompositeDisposable(List<FileSystemWatcher> watchers) : IDisposable
+    private sealed class WatchSubscription(List<FileSystemWatcher> watchers, RebuildQueue queue) : IAsyncDisposable
     {
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             foreach (var watcher in watchers)
             {
                 watcher.Dispose();
             }
+            await queue.DisposeAsync();
         }
     }
 }

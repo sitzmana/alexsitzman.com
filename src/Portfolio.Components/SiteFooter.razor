@@ -32,6 +32,10 @@
             <span>&copy; @BuildYear.ToString(CultureInfo.InvariantCulture) @Content.Site.Name</span>
             <span class="colophon__sep" aria-hidden="true">/</span>
             <span>Built with .NET and rendered to static HTML</span>
+            @if (Content.Site.PageNavigation is { } navigation)
+            {
+                <a class="colophon__top" href="#top">@navigation.BackToTopLabel</a>
+            }
         </p>
     </div>
 </footer>

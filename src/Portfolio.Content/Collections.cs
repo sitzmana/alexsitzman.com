@@ -11,11 +11,18 @@ public sealed class Project : ContentEntry
 
     /// <summary>Free-form period label, e.g. "2023" or "2022–2023".</summary>
     public string? Period { get; init; }
+
+    /// <summary>Optional decorative artwork: network, stack, or signal.</summary>
+    public string? Visual { get; init; }
+
+    public string? Category { get; init; }
 }
 
 /// <summary>A professional certification. Source: <c>content/certifications/</c>.</summary>
 public sealed class Certification : ContentEntry
 {
+    public bool Featured { get; init; }
+
     /// <summary>Awarding body, e.g. "Cloud Native Computing Foundation".</summary>
     public string Issuer { get; init; } = "";
 
@@ -51,4 +58,32 @@ public sealed class Interest : ContentEntry
 /// <summary>A short "did you know" line. Source: <c>content/facts/</c>.</summary>
 public sealed class Fact : ContentEntry
 {
+}
+
+public sealed class RepositoryEntry : ContentEntry
+{
+    public string? Language { get; init; }
+
+    public bool Fork { get; init; }
+}
+
+public sealed class Track : ContentEntry
+{
+    public string Artist { get; init; } = "";
+}
+
+public sealed class ActivitySnapshot : ContentEntry
+{
+    public DateTime Start { get; init; }
+
+    public DateTime End { get; init; }
+
+    public ContributionDay[] Days { get; init; } = [];
+}
+
+public sealed class ContributionDay
+{
+    public DateTime Date { get; init; }
+
+    public int Count { get; init; }
 }

@@ -1,3 +1,5 @@
+using YamlDotNet.Serialization;
+
 namespace Portfolio.Content;
 
 /// <summary>
@@ -35,6 +37,12 @@ public abstract class ContentEntry
     /// <summary>Markdown body rendered to HTML. Empty when the file has no body.</summary>
     public string BodyHtml { get; set; } = "";
 
+    /// <summary>Top-level Markdown h2 headings, derived rather than authored separately.</summary>
+    [YamlIgnore]
+    public ContentHeading[] BodyHeadings { get; internal set; } = [];
+
     /// <summary>True when the file has prose beyond its front matter.</summary>
     public bool HasBody => BodyHtml.Length > 0;
 }
+
+public sealed record ContentHeading(string Id, string Title);

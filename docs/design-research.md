@@ -1,5 +1,8 @@
 # Design research
 
+This records the initial design direction. The spatial revision deliberately
+revisits the illustration constraint; see `design-system.md` and decisions D17-D24.
+
 Principles drawn from well-made technology sites, and how each was transformed rather
 than copied. No markup, CSS, artwork, icon, or effect was taken from any of these sites.
 

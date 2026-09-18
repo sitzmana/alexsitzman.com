@@ -1,11 +1,12 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Portfolio.Generator;
 
 /// <summary>Output paths of the hashed CSS and JS bundles.</summary>
-internal sealed record AssetManifest(string StylesheetPath, string ScriptPath);
+internal sealed record AssetManifest(string StylesheetPath, string ScriptPath, string ThemeColor);
 
 /// <summary>
 /// Concatenates the stylesheet parts and the enhancement script into one file each,
@@ -27,11 +28,16 @@ internal static class AssetPipeline
     {
         var css = Concatenate(Path.Combine(assetsRoot, "styles"), StyleOrder);
         var js = File.ReadAllText(Path.Combine(assetsRoot, "scripts", "enhance.js"));
+        var theme = Regex.Match(css, @"--bg:\s*(#[0-9a-fA-F]{6})\s*;");
+        if (!theme.Success)
+        {
+            throw new InvalidDataException("assets/styles/tokens.css must define --bg as a six-digit hex colour.");
+        }
 
         var cssPath = WriteHashed(outputRoot, "assets", "site", ".css", css);
         var jsPath = WriteHashed(outputRoot, "assets", "enhance", ".js", js);
 
-        return new AssetManifest(cssPath, jsPath);
+        return new AssetManifest(cssPath, jsPath, theme.Groups[1].Value);
     }
 
     private static string Concatenate(string directory, string[] fileNames)
@@ -60,12 +66,13 @@ internal static class AssetPipeline
         string extension,
         string content)
     {
-        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(content)))[..10];
+        var bytes = Encoding.UTF8.GetBytes(content);
+        var hash = Convert.ToHexStringLower(SHA256.HashData(bytes))[..10];
         var fileName = $"{name}.{hash}{extension}";
         var directory = Path.Combine(outputRoot, folder);
 
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, fileName), content, new UTF8Encoding(false));
+        File.WriteAllBytes(Path.Combine(directory, fileName), bytes);
 
         return $"/{folder}/{fileName}";
     }

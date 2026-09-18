@@ -26,7 +26,19 @@ public sealed class RealContentTests
 
     [Fact]
     public void Home_about_and_now_pages_exist() =>
-        Assert.Equal(["/", "/about/", "/now/"], Content.Pages.Select(p => p.Route));
+        Assert.All(new[] { "/", "/about/", "/now/" },
+            route => Assert.Contains(Content.Pages, item => item.Route == route));
+
+    [Fact]
+    public void The_site_tour_is_a_content_page_with_derived_navigation()
+    {
+        var tour = Assert.Single(Content.Pages, item => item.Route == "/site/");
+
+        Assert.Equal("This site", tour.NavLabel);
+        Assert.True(tour.BodyHeadings.Length >= 3);
+        Assert.NotNull(Content.Site.PageNavigation);
+        Assert.All(tour.BodyHeadings, heading => Assert.Contains($"id=\"{heading.Id}\"", tour.BodyHtml, StringComparison.Ordinal));
+    }
 
     [Fact]
     public void Every_page_section_key_is_known()
@@ -42,12 +54,20 @@ public sealed class RealContentTests
     [Fact]
     public void Collections_carried_over_from_the_previous_site_are_present()
     {
-        Assert.Equal(3, Content.Projects.Length);
-        Assert.Equal(2, Content.Certifications.Length);
+        Assert.All(new[] { "virtual-internet-project", "kubernetes-raspberry-pi-cluster", "das-driver" },
+            slug => Assert.Contains(Content.Projects, project => project.Slug == slug));
+        Assert.Contains(Content.Certifications, cert => cert.Slug == "certified-kubernetes-administrator");
+        Assert.Contains(Content.Certifications, cert => cert.Slug == "certified-linux-systems-administrator");
         Assert.NotEmpty(Content.Now);
         Assert.NotEmpty(Content.Skills);
         Assert.Equal(3, Content.Interests.Length);
         Assert.NotEmpty(Content.Facts);
+        Assert.All(new[] { "website", "mariaheschelescom", "gomud", "dot-files", "terraform" },
+            slug => Assert.Contains(Content.Repositories, repository => repository.Slug == slug));
+        Assert.All(new[] { "gomud", "terraform" },
+            slug => Assert.Contains(Content.Repositories, repository => repository.Slug == slug && repository.Fork));
+        Assert.Equal(12, Content.Listening.Length);
+        Assert.Equal(6, Assert.Single(Content.Activity).Days.Sum(day => day.Count));
     }
 
     [Fact]
@@ -111,5 +131,8 @@ public sealed class RealContentTests
         .. Content.Skills,
         .. Content.Interests,
         .. Content.Facts,
+        .. Content.Repositories,
+        .. Content.Listening,
+        .. Content.Activity,
     ];
 }

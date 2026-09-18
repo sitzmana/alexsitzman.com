@@ -9,7 +9,8 @@ Adding a project, a page, or a skill needs no code and no C#.
 dotnet run --project src/Portfolio.Generator -- --serve
 ```
 
-Edit a file under `content/`, save, refresh. Rebuild takes about 200 ms.
+Edit a file under `content/`, save, refresh. A failed content rebuild preserves the
+last good preview; the terminal names the offending file.
 
 ## Changing code
 
@@ -32,6 +33,8 @@ Both must pass. Warnings are errors, so a warning fails the build.
 | A new section type | `Sections/*.razor` + one entry in `SectionRegistry` |
 | A new collection | A type in `Collections.cs`, a `LoadCollection` call, a `PortfolioContent` property |
 | Document head, meta tags | `DocumentTemplate.cs` |
+| Hero and section editorial copy | `hero` and `sections` in `content/site.yml` |
+| Project artwork | The project's `visual` front-matter key |
 
 ### Rules
 
@@ -59,6 +62,10 @@ dotnet run --project src/Portfolio.Generator -c Release --no-build -- --output d
 If the change is visual, also check it at 320 px and 1440 px, with reduced motion on, and
 with JavaScript disabled. The exact scripts used previously are in
 [docs/testing.md](docs/testing.md).
+
+The persisted browser harness also checks blocked scripts, forced colors, keyboard
+and touch controls, and live reduced-motion changes. Run it for visual or enhancement
+changes; its test-only dependency is documented in `docs/decisions.md`.
 
 ### Dependency changes
 

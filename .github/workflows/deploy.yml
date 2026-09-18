@@ -19,38 +19,7 @@ jobs:
   build:
     name: Build and validate
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      - name: Restore
-        run: dotnet restore Portfolio.slnx --locked-mode
-
-      - name: Build
-        run: dotnet build Portfolio.slnx --configuration Release --no-restore
-
-      - name: Test
-        run: dotnet test Portfolio.slnx --configuration Release --no-build
-
-      - name: Generate site
-        run: dotnet run --project src/Portfolio.Generator --configuration Release --no-build -- --output dist
-
-      - name: Upload site
-        uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: dist
-          retention-days: 7
+    uses: ./.github/workflows/ci.yml
 
   deploy:
     name: Deploy to Azure Static Web Apps

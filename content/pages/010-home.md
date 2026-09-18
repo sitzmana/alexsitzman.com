@@ -7,7 +7,7 @@ metaTitle: Alex Sitzman — Senior Technical Support Engineer, Microsoft Azure
 sections:
   - hero
   - projects
-  - certifications
+  - credential-highlight
   - skills
   - contact
 ---

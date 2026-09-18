@@ -1,0 +1,122 @@
+@using System.Text.Json
+
+<ContentSection Key="explorer" Compact="true">
+    <div class="explorer" data-explorer
+         data-results-template="@Copy.ResultsTemplate" data-invalid-message="@Copy.InvalidFilterMessage"
+         data-ready-message="@Copy.ReadyMessage" data-copied-message="@Copy.CopiedMessage"
+         data-history-failed-message="@Copy.HistoryFailedMessage"
+         data-copy-failed-message="@Copy.CopyFailedMessage">
+        <form class="explorer__form" role="search" aria-label="@Copy.SearchLabel">
+            <fieldset class="explorer__controls" disabled>
+                <legend class="visually-hidden">@Copy.SearchLabel</legend>
+                <div class="explorer__inputs">
+                    <label class="explorer__field" for="evidence-query">
+                        <span>@Copy.SearchLabel</span>
+                        <input id="evidence-query" type="search" name="q" placeholder="@Copy.SearchPlaceholder"
+                               autocomplete="off" spellcheck="false" aria-controls="evidence-results" aria-describedby="evidence-help" />
+                    </label>
+                    <label class="explorer__field" for="evidence-topic">
+                        <span>@Copy.TopicLabel</span>
+                        <select id="evidence-topic" name="topic" aria-controls="evidence-results" aria-describedby="evidence-help">
+                            <option value="">@Copy.AllTopicsLabel</option>
+                            @foreach (var topic in Topics)
+                            {
+                                <option value="@topic">@topic</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="explorer__kinds" role="group" aria-label="@Copy.KindLabel">
+                    @foreach (var kind in Enum.GetValues<EvidenceKind>())
+                    {
+                        <button class="explorer__kind" type="button" data-kind="@kind.ToString().ToLowerInvariant()"
+                                aria-pressed="false" aria-controls="evidence-results">
+                            <span class="explorer__count" data-kind-count>@Items.Count(item => item.Kind == kind)</span>
+                            <span>@Copy.LabelFor(kind)</span>
+                            <IconGlyph Name="arrow-down" />
+                        </button>
+                    }
+                </div>
+                <div class="explorer__actions">
+                    <button class="chip" type="button" data-explorer-reset>@Copy.ResetLabel</button>
+                    <button class="chip" type="button" data-explorer-share>@Copy.ShareLabel <IconGlyph Name="arrow-out" /></button>
+                </div>
+                <label class="explorer__field explorer__share-field" hidden>
+                    <span>@Copy.ShareUrlLabel</span>
+                    <input type="text" readonly data-share-url />
+                </label>
+            </fieldset>
+        </form>
+        <p class="explorer__hint" id="evidence-help" data-explorer-hint>@Copy.FallbackMessage</p>
+        <p class="explorer__notice" data-explorer-notice role="status" aria-atomic="true"></p>
+        <div class="explorer__status">
+            <p data-explorer-status role="status" aria-atomic="true">@ResultText</p>
+            <span class="explorer__rule" aria-hidden="true"></span>
+        </div>
+        <p class="explorer__empty" data-explorer-empty hidden>@Copy.EmptyMessage</p>
+        <ul class="evidence-grid" id="evidence-results">
+            @foreach (var item in Items)
+            {
+                <li class="card evidence-card" id="evidence-@item.Key" data-evidence
+                    data-kind="@item.Kind.ToString().ToLowerInvariant()" data-topics="@JsonSerializer.Serialize(item.Topics)"
+                    data-search="@SearchText(item)">
+                    <article class="card__body">
+                        <p class="evidence-card__kind">
+                            @Copy.LabelFor(item.Kind)
+                            @if (item.Entry is RepositoryEntry { Fork: true })
+                            {
+                                <span class="repository__fork">Fork</span>
+                            }
+                            @if (item.Entry is Certification { Abbreviation: { } abbreviation })
+                            {
+                                <span class="cert__badge">@abbreviation</span>
+                            }
+                        </p>
+                        <h3 class="card__title">@item.Entry.Title</h3>
+                        @if (!string.IsNullOrWhiteSpace(item.Detail))
+                        {
+                            <p class="card__meta">@item.Detail</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.Entry.Summary))
+                        {
+                            <p class="card__summary">@item.Entry.Summary</p>
+                        }
+                        <TagList Tags="item.Topics" Label="@($"Topics for {item.Entry.Title}")" />
+                        @if (item.Url is { } url)
+                        {
+                            <a class="evidence-card__link" href="@url">
+                                @Copy.OpenLabel <span class="visually-hidden">: @item.Entry.Title</span>
+                                <IconGlyph Name="arrow-right" />
+                            </a>
+                        }
+                    </article>
+                </li>
+            }
+        </ul>
+    </div>
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+
+    private ExplorerCopy Copy => Content.Site.Explorer
+        ?? throw new ContentException("content/site.yml", "Explorer copy is required.");
+    private EvidenceItem[] Items { get; set; } = [];
+    private string[] Topics { get; set; } = [];
+    private string ResultText => Copy.ResultsTemplate
+        .Replace("{shown}", Items.Length.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal)
+        .Replace("{total}", Items.Length.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
+
+    protected override void OnParametersSet()
+    {
+        Items = Content.Evidence.ToArray();
+        Topics = [.. Items.SelectMany(item => item.Topics).Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private static string SearchText(EvidenceItem item) => string.Join(" ",
+        item.Entry.Title, item.Entry.Summary, item.Detail, string.Join(" ", item.Topics),
+        item.Entry is Certification certification ? certification.Abbreviation : null,
+        item.Entry is RepositoryEntry { Fork: true } ? "Fork" : null);
+}

@@ -1,10 +1,10 @@
 ---
 title: DAS Driver Windows/NetBSD
 featured: true
+visual: signal
+category: Systems
 summary: >-
-  A driver for a digital analog converter, utilizing a PCI bus. Built in both NetBSD and
-  Windows environments, the device read from a varying voltage source and converts it
-  into machine readable samples with time stamps.
+  A PCI driver for Windows and NetBSD that records voltage samples with timestamps.
 tags:
   - C/C#
   - Hardware

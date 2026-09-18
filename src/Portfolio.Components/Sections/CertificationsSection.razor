@@ -1,11 +1,10 @@
 @* Certifications. The abbreviation is decorative shorthand; the full name is the heading. *@
 
-<ContentSection Key="certifications" Title="Certifications"
-                Lead="Independently assessed, hands-on credentials.">
+<ContentSection Key="certifications">
     <ul class="cards cards--certs">
         @foreach (var cert in Content.Certifications)
         {
-            <li class="card card--cert reveal">
+            <li class="card card--cert reveal" id="credential-@cert.Slug" tabindex="-1">
                 <article class="card__body">
                     @if (!string.IsNullOrWhiteSpace(cert.Abbreviation))
                     {
@@ -16,6 +15,10 @@
                         <IconGlyph Name="check" Class="cert__check" />
                         @cert.Issuer
                     </p>
+                    @if (!string.IsNullOrWhiteSpace(cert.Summary))
+                    {
+                        <p class="card__summary">@cert.Summary</p>
+                    }
                     <TagList Tags="cert.Tags" Label="@($"Topics covered by {cert.Title}")" />
                     <LinkList Links="cert.Links" />
                 </article>

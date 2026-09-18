@@ -1,0 +1,44 @@
+<ContentSection Key="activity">
+    @foreach (var snapshot in Content.Activity)
+    {
+        var counts = snapshot.Days.ToDictionary(day => day.Date.Date, day => day.Count);
+        <article class="activity reveal">
+            <div class="activity__summary">
+                <h3>@snapshot.Title</h3>
+                <p><strong class="activity__total">@counts.Values.Sum(count => (long)count)</strong> public contributions</p>
+                <p class="activity__period">
+                    <time datetime="@snapshot.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@snapshot.Start.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)</time>
+                    <span aria-hidden="true"> / </span><span class="visually-hidden">through</span>
+                    <time datetime="@snapshot.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@snapshot.End.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)</time>
+                </p>
+            </div>
+            <div class="activity__calendar" tabindex="0" role="region" aria-label="Scrollable contribution calendar; exact dates are listed below">
+                <div class="activity__grid" aria-hidden="true">
+                    @for (var blank = 0; blank < (int)snapshot.Start.DayOfWeek; blank++)
+                    {
+                        <span></span>
+                    }
+                    @for (var offset = 0; offset <= (snapshot.End - snapshot.Start).Days; offset++)
+                    {
+                        var date = snapshot.Start.AddDays(offset);
+                        var count = counts.GetValueOrDefault(date);
+                        <span class="activity__day @(count > 0 ? "activity__day--active" : null)"
+                              title="@($"{date:yyyy-MM-dd}: {count} contributions")">@(count > 0 ? "+" : null)</span>
+                    }
+                </div>
+            </div>
+            <ul class="activity__dates" aria-label="Contribution dates">
+                @foreach (var day in snapshot.Days.OrderBy(day => day.Date))
+                {
+                    <li><time datetime="@day.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@day.Date.ToString("MMM d", CultureInfo.InvariantCulture)</time><span>@day.Count contribution@(day.Count == 1 ? "" : "s")</span></li>
+                }
+            </ul>
+            <LinkList Links="snapshot.Links" />
+        </article>
+    }
+</ContentSection>
+
+@code {
+    [CascadingParameter]
+    public required PortfolioContent Content { get; set; }
+}

@@ -1,70 +1,138 @@
-/* Motion. Everything here is additive: with scripting off or reduced motion on,
-   the page renders fully and statically. */
-
-/* Content is visible by default. Only once the script has confirmed it is running
-   does anything get hidden, so a failed or blocked script cannot hide the site. */
+/* Only observed, offscreen elements are armed by the enhancement script.
+   A blocked script leaves the document entirely visible. */
 .js .reveal {
+  transition: opacity var(--dur-slow) var(--ease-out),
+    translate var(--dur-slow) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.js .reveal.is-pending {
   opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity var(--dur-slow) var(--ease-out),
-    transform var(--dur-slow) var(--ease-out);
+  translate: 0 var(--reveal-distance);
 }
 
-.js .reveal.is-visible {
+.js .reveal:focus-within {
   opacity: 1;
-  transform: none;
+  translate: none;
 }
 
-/* Staggering within a group reads as one movement rather than several. */
 .js .cards .reveal:nth-child(2) {
-  transition-delay: 70ms;
+  transition-delay: var(--reveal-stagger), var(--reveal-stagger), 0s;
 }
-
 .js .cards .reveal:nth-child(3) {
-  transition-delay: 140ms;
-}
-
-.js .cards .reveal:nth-child(4) {
-  transition-delay: 210ms;
+  transition-delay: calc(var(--reveal-stagger) * 2), calc(var(--reveal-stagger) * 2), 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  .js .reveal,
-  .js .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-    transition: none;
-    transition-delay: 0ms;
-  }
-
-  .scroll-progress {
-    display: none;
-  }
-
   *,
   *::before,
   *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
+
+  .js .reveal.is-pending {
+    opacity: 1;
+    translate: none;
+  }
+
+  .card:hover,
+  .card:focus-within,
+  .button--primary:hover,
+  .project-visual svg {
+    transform: none;
+  }
+
+  .depth-surface,
+  .project-card:hover,
+  .project-card:focus-within,
+  .project-deck__surface,
+  .project-deck__card:hover .project-deck__surface,
+  .project-deck__card:focus-visible .project-deck__surface,
+  .record__link:focus-visible .record__disc,
+  .record__link:focus-visible .record__sleeve { transform: none; }
+
+  .scroll-progress { display: none; }
 }
 
-/* Coarse pointers get no hover-dependent lift: it either never fires or sticks
-   after a tap. Focus styling still applies. */
 @media (hover: none) {
   .card:hover {
     transform: none;
     box-shadow: var(--shadow-raised);
   }
 
-  .button--primary:hover {
-    translate: none;
+  .button--primary:hover { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .hero__name,
+  .wordmark__mark {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
   }
+
+  .hero__field,
+  .project-visual,
+  .record__art,
+  .scroll-progress { display: none; }
+
+  .project-deck__surface,
+  .project-deck__card:hover .project-deck__surface {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    transform: none;
+    border-color: CanvasText;
+  }
+  .project-deck__copy, .project-card__art, .depth-surface,
+  .project-card:hover, .project-card:focus-within { transform: none; }
+  .project-card::after { display: none; }
+  .project-card__art { min-height: 0; }
+  .activity__day--active { border: var(--focus-width) solid CanvasText; }
+  .button,
+  .card,
+  .page-contents__panel,
+  .explorer__kind,
+  .credential-highlight,
+  .tag { border-color: CanvasText; }
+  .explorer__kind[aria-pressed="true"] { outline: var(--focus-width) solid CanvasText; }
+
+  .nav__link.is-current { outline: var(--line) solid CanvasText; }
+  .page-contents__link[aria-current="location"] { border-color: CanvasText; }
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: var(--print-bg);
+    --bg-raised: var(--print-bg);
+    --text: var(--print-text);
+    --text-muted: var(--print-text);
+    --text-subtle: var(--print-text);
+    --accent: var(--print-text);
+    --accent-bright: var(--print-text);
+    --on-accent: var(--print-bg);
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .js .reveal.is-pending { opacity: 1; translate: none; }
+  .hero__name, .wordmark__mark { background: none; color: var(--text); }
+  .masthead { position: static; }
+  .project-index, .hero__field, .scroll-progress, .skip-link, .shelf-controls, .record__art,
+  .page-contents, .colophon__top { display: none; }
+  .record-shelf { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; }
+  .project-card__art, .project-card, .project-card:hover { transform: none; }
+  .project-card::after { display: none; }
+  .card { break-inside: avoid; }
+  .explorer__form, .explorer__hint, .explorer__notice, .explorer__status, .explorer__empty,
+  .credential-highlight__seal { display: none; }
+  .evidence-card[hidden] { display: block; }
 }

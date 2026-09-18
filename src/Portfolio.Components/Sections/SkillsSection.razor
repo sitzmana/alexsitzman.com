@@ -1,6 +1,6 @@
 @* Technologies, grouped. No proficiency bars: a percentage on a skill is unverifiable. *@
 
-<ContentSection Key="skills" Title="Tools and technologies">
+<ContentSection Key="skills">
     <div class="skills">
         @foreach (var group in Content.Skills)
         {
@@ -9,7 +9,18 @@
                 <ul class="tags tags--lg">
                     @foreach (var item in group.Items)
                     {
-                        <li class="tag">@item</li>
+                        <li class="tag">
+                            @if (ExplorerRoute is { } route && LinkedTopics.Contains(item))
+                            {
+                                <a class="skill-link" href="@(route)?topic=@Uri.EscapeDataString(item)">
+                                    @item <IconGlyph Name="arrow-right" />
+                                </a>
+                            }
+                            else
+                            {
+                                @item
+                            }
+                        </li>
                     }
                 </ul>
             </section>
@@ -20,4 +31,10 @@
 @code {
     [CascadingParameter]
     public required PortfolioContent Content { get; set; }
+
+    private string? ExplorerRoute => Content.SectionRoute("explorer");
+    private HashSet<string> LinkedTopics { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    protected override void OnParametersSet() =>
+        LinkedTopics = Content.Evidence.SelectMany(item => item.Topics).ToHashSet(StringComparer.OrdinalIgnoreCase);
 }

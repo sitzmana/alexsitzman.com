@@ -23,7 +23,8 @@ static/       Copied verbatim to the site root
 src/Portfolio.Content      Models + loader. No HTML knowledge.
 src/Portfolio.Components   Razor components. Presentation only. No I/O.
 src/Portfolio.Generator    Console app. HtmlRenderer → files.
-tests/Portfolio.Tests      xUnit, 54 tests.
+tests/Portfolio.Tests      xUnit, 143 tests.
+tests/browser              Optional local Playwright tooling; required in CI.
 dist/                      Generated. Git-ignored. Never commit.
 ```
 
@@ -31,7 +32,7 @@ dist/                      Generated. Git-ignored. Never commit.
 
 ```pwsh
 dotnet run --project src/Portfolio.Generator -- --serve   # preview at :5000, watches files
-dotnet test Portfolio.slnx                                # 54 tests
+dotnet test Portfolio.slnx                                # 143 tests
 dotnet build Portfolio.slnx -c Release
 ```
 
@@ -40,8 +41,9 @@ Do not claim a change works without running these.
 ## Non-negotiables
 
 1. **Content is visible by default.** `<html>` ships with `class="no-js"`; an inline script
-   swaps it to `js`. Only `.js .reveal` is hidden. A failed script must never leave the
-   page blank. Verified: JS disabled → 0 of 18 elements hidden.
+   swaps it to `js`. Only `.js .reveal.is-pending` is hidden, after the enhancement
+   registers an offscreen element with its observer. The hero is never hidden.
+   Disabled or blocked JavaScript must leave every content element visible.
 2. **`prefers-reduced-motion: reduce` disables all motion** and reveals everything
    immediately.
 3. **No design value is hard-coded.** Use a token from `tokens.css`. If none fits, add one.
@@ -64,14 +66,25 @@ Do not claim a change works without running these.
 - `draft: true` excludes an entry.
 - A page's `sections:` keys resolve through `SectionRegistry`. An unknown key fails the
   build and lists the valid keys.
+- Page contents derive from Markdown h2 headings and declared sections, never a second outline.
+- Body anchors use `<collection>-<slug>--<heading>`; local Markdown heading links are rewritten to match.
+- Hero and section copy live in `content/site.yml`. Every used non-hero section needs
+  a lowercase `sections` entry with a title.
+- `visual: network`, `stack`, or `signal` selects decorative project artwork.
+- Hero project links and their destinations share `FeaturedProjects`; do not duplicate the selection.
+- Hero deck links stay stationary; animate only their pointer-transparent inner surfaces within reserved clearance.
+- Repositories, activity, and listening are dated file-backed snapshots, not live feeds.
+- Listening entries require an artist/link; section copy requires previous/next labels.
+- Explorer is derived from entries and declared topics; never maintain a second catalog or infer proficiency.
+- Source destinations use `SectionRoute`; credential `featured: true` selects the home highlight.
 - Warnings are errors. Do not suppress; fix.
 - Nullable reference types are enabled throughout.
 - Do not name a Razor loop variable `page` — `@page` parses as a directive.
 
 ## Performance budget
 
-Home page HTML + CSS + JS must stay under **150 KB uncompressed**. Currently 43.8 KB
-(9.9 KB gzipped). CI fails the build if it is exceeded. There are no webfonts, no
+Home page HTML + CSS + JS must stay under **150 KiB uncompressed**. Currently 92.8 KiB
+(17.5 KiB gzipped). `scripts/check-performance.ps1` checks exact bytes. There are no webfonts, no
 frameworks, and no third-party requests; keep it that way.
 
 ## Before saying something is done
@@ -80,6 +93,8 @@ frameworks, and no third-party requests; keep it that way.
 - `dotnet build -c Release` is clean
 - The site generates
 - Visual changes checked at 320 px and 1440 px, with reduced motion, and with JS disabled
+- Run `tests/browser/check_site.py` for visual or enhancement changes; it also exercises
+  blocked scripts, keyboard/touch controls, forced colors, and runtime motion preferences.
 - No secret, token, or credential added to any tracked file
 
 Full context: `docs/architecture.md`, `docs/decisions.md`, `docs/design-system.md`.

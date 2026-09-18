@@ -1,10 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 # Least privilege: this workflow only reads the repository.
@@ -12,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -62,19 +59,21 @@ jobs:
           echo "Generated $(find dist -type f | wc -l) files, $(du -sh dist | cut -f1) total."
 
       - name: Check performance budget
-        shell: bash
+        shell: pwsh
+        run: ./scripts/check-performance.ps1
+
+      - name: Set up browser checks
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install browser test tools
         run: |
-          set -euo pipefail
-          budget_kb=150
-          html_kb=$(( $(stat -c%s dist/index.html) / 1024 ))
-          css_kb=$(( $(cat dist/assets/site.*.css | wc -c) / 1024 ))
-          js_kb=$(( $(cat dist/assets/enhance.*.js | wc -c) / 1024 ))
-          total=$(( html_kb + css_kb + js_kb ))
-          echo "Home page payload: ${html_kb} KB HTML + ${css_kb} KB CSS + ${js_kb} KB JS = ${total} KB"
-          if [ "$total" -gt "$budget_kb" ]; then
-            echo "::error::Payload ${total} KB exceeds the ${budget_kb} KB budget."
-            exit 1
-          fi
+          python -m pip install -r tests/browser/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Check responsive layouts and fallbacks
+        run: python tests/browser/check_site.py
 
       - name: Upload site
         uses: actions/upload-artifact@v4
